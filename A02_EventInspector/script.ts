@@ -9,21 +9,18 @@ namespace A02_EventInspector {
 
     window.addEventListener("load", handleLoad);
 
+    // define divs and button
+    let div0: HTMLElement = <HTMLElement>document.getElementById("div0");
+    let div1: HTMLElement = <HTMLElement>document.getElementById("div1");
+    let button0: HTMLButtonElement = <HTMLButtonElement>document.getElementById("button0");
+
     // button and log counts, to keep better overview in console output
     let buttonClickCount: number = 0;
     let infoLogCount: number = 0;
 
     function handleLoad(): void {
-        let div0: HTMLElement = <HTMLElement>document.getElementById("div0");
-        let div1: HTMLElement = <HTMLElement>document.getElementById("div1");
-        let button0: HTMLButtonElement = <HTMLButtonElement>document.getElementById("button0");
-
         // sets info box
         document.addEventListener("mousemove", setInfoBox);
-        
-        // sets button click // sets button custom event (not anymore)
-        //button0.addEventListener("click", customEvent);
-        button0.addEventListener("click", clickButton);
 
         // logInfo clicks & keyups
         document.addEventListener("click", logInfo);
@@ -37,6 +34,10 @@ namespace A02_EventInspector {
 
         div1.addEventListener("click", logInfo);
         div1.addEventListener("keyup", logInfo);
+
+        // sets button custom event
+        button0.addEventListener("click", setCustomEvent);
+        document.addEventListener("customBttnclick", getCustomEvent);
     }
 
     function setInfoBox(_event: MouseEvent): void {
@@ -46,49 +47,18 @@ namespace A02_EventInspector {
         let mouseX: number = _event.clientX;
         let mouseY: number = _event.clientY;
 
+        //console.log("Mouse X: " + mouseX + ", Y: " + mouseY);
+
         // offset of info box
         let offsetX: number = mouseX + 10;
         let offsetY: number = mouseY + 10;
 
-        //console.log("Mouse X: " + mouseX + ", Y: " + mouseY);
-
         // outputs mouse position and target to info box
-        spanElement.innerHTML = "MouseX: " + mouseX + ", MouseY: " + mouseY + ", Target: " + _event.target;
+        spanElement.innerHTML = "MouseX: " + mouseX + "; MouseY: " + mouseY + "; Target: " + _event.target;
 
         // offsets the span element
         spanElement.style.left = offsetX + "px";
         spanElement.style.top = offsetY + "px";
-    }
-
-    function clickButton(_event: MouseEvent): void {
-        // counts up button clicks :)
-        buttonClickCount++;
-
-        // proper grammar :P
-        if (buttonClickCount > 1) {
-            console.log("- - - - - " + buttonClickCount + " BUTTONS CLICKED! - - - - -");
-        } else {
-            console.log("- - - - - " + buttonClickCount + " BUTTON CLICKED! - - - - -");
-        }
-
-        // logs button path, don't need custom event?
-        console.log("- Button Path -");
-        console.log(_event.composedPath());
-    }
-
-    function customEvent(_event: MouseEvent): void {
-        //console.log("Custom event triggered");
-
-        let customPath: EventTarget[] = _event.composedPath();
-
-        let eventCustom = new CustomEvent('showDOM', {
-            bubbles: true, 
-            detail: {
-                name: customPath
-            },
-        });
-        
-        document.getElementById("button0")!.dispatchEvent(eventCustom);
     }
 
     function logInfo(_event: Event): void {
@@ -111,5 +81,32 @@ namespace A02_EventInspector {
         console.log(_event.currentTarget);
 
         console.log("--- " + infoLogCount + " end ---");
+    }
+
+    function setCustomEvent(_event: Event): void {
+        // sets custom event
+        let customEvent0: CustomEvent = new CustomEvent("customBttnclick", {
+            bubbles: true
+        });
+
+        button0.dispatchEvent(customEvent0);
+    }
+
+    function getCustomEvent(_event: Event): void {
+        //console.log("Custom event triggered");
+
+        // counts up button clicks :)
+        buttonClickCount++;
+
+        // proper grammar :P
+        if (buttonClickCount > 1) {
+            console.log("- - - - - Custom event triggered! " + buttonClickCount + " BUTTONS CLICKED - - - - -");
+        } else {
+            console.log("- - - - - Custom event triggered! " + buttonClickCount + " BUTTON CLICKED - - - - -");
+        }
+
+        // logs button path
+        console.log("- Button Path -");
+        console.log(_event.composedPath());
     }
 }
