@@ -1,0 +1,70 @@
+h1 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 40px;
+    text-align: center;
+    color: darkorange;
+}
+
+body {
+    background-color: rgb(54, 54, 54);
+}
+
+#div0 {
+    position: relative;
+    display: flexbox;
+    float: left;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    width: 40%;
+    height: 600px;
+    margin: 2%;
+    background-color:blueviolet;
+    border-color: blue;
+    border-style: solid;
+    border-width: 5px;
+}
+
+#div1 {
+    position: relative;
+    display: flexbox;
+    float: right;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    width: 40%;
+    height: 600px;
+    margin: 2%;
+    background-color: deeppink;
+    border-color:darkblue;
+    border-style: solid;
+    border-width: 5px;
+}
+
+#button0 {
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 33%;
+    padding: 1%;
+    background-color: steelblue;
+    color: chocolate;
+    font-weight: bold;
+}
+
+#button0:hover {
+    background-color: darkcyan;
+}
+
+#span0 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 15px;
+    position: fixed;
+    text-align: center;
+    padding: 1%;
+    width: 200px;
+    height: 50px;
+    background-color: mediumturquoise;
+    color: black;
+    border-color: darkslategrey;
+    border-style:double;
+    border-width: 5px;
+}
