@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A03 Aufgabenliste</title>
+    <script src="script.js" defer>script.ts</script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <h1>Aufgabenliste</h1>
+    <div class="userscontainer">
+        <div class="user" id="user0">
+            <button class="removeuserbttn" id="removeuserbutton0">X</button>
+
+            <h2 class="username" id="username0">Username#1</h2>
+
+            <div class="task" id="task0">
+                <button class="removetaskbttn" id="removetaskbutton0">X</button>
+                <h3 class="taskname" id="taskname0">Task#1 name</h3>
+                <p class="deadlinetask" id="deadlinetask0">Due date<br>
+                    Due time
+                </p>
+                <p class="desc" id="desc0">Description...</p>
+                <div class="comments" id="comments0">
+                    <input type="text" class="taskcommentinput" id="task0commentinput" name="task0commentinput"
+                        placeholder="Comment here">
+                </div>
+                <div class="slidercontainer">
+                    <input type="range" min="0" max="2" value="0" class="taskslider" id="taskslider0">
+                    <p><span class="sliderspan" id="slider0">...</span></p>
+                </div>
+            </div>
+
+            <div class="addtask" id="addtask0">
+                <p>Add new task</p>
+                <button class="addtaskbutton" id="addtaskbutton0">+</button>
+            </div>
+        </div>
+        <div class="user" id="user1">
+            <button class="removeuserbttn" id="removeuserbutton1">X</button>
+            <h2 class="username" id="username1">Username#2</h2>
+            <div class="task" id="task1">
+                <button class="removetaskbttn" id="removetaskbutton1">X</button>
+                <h3 class="taskname" id="taskname1">Task#2 name</h3>
+                <p class="deadlinetask" id="deadlinetask1">Due date<br>
+                    Due time
+                </p>
+                <p class="desc" id="desc1">Description...</p>
+                <div class="comments" id="comments1">
+                    <p class="commentary">Comment#1</p>
+                    <input type="text" class="taskcommentinput" id="task1commentinput" name="task1commentinput"
+                        placeholder="Comment here">
+                </div>
+                <div class="slidercontainer">
+                    <input type="range" min="0" max="2" value="0" class="taskslider" id="taskslider1">
+                    <p><span class="sliderspan" id="slider1">...</span></p>
+                </div>
+            </div>
+            <div class="task" id="task2">
+                <button class="removetaskbttn" id="removetaskbutton2">X</button>
+                <h3 class="taskname" id="taskname2">Example</h3>
+                <p class="deadlinetask" id="deadlinetask2">20.04.2023<br>
+                    16:20
+                </p>
+                <p class="desc" id="desc2">Take out the trash!</p>
+                <div class="comments" id="comments2">
+                    <p class="commentary">"Working on it! -JR"</p>
+                    <input type="text" class="taskcommentinput" id="task2commentinput" name="task2commentinput"
+                        placeholder="Comment here">
+                </div>
+                <div class="slidercontainer">
+                    <input type="range" min="0" max="2" value="0" class="taskslider" id="taskslider2">
+                    <p><span class="sliderspan" id="slider2">...</span></p>
+                </div>
+            </div>
+            <div class="addtask" id="addtask2">
+                <p>Add new task</p>
+                <button class="addtaskbutton" id="addtaskbutton2">+</button>
+            </div>
+        </div>
+        <div class="adduser" id="adduser">
+            <p>Add new user</p>
+            <button id="adduserbutton">+</button>
+            <input type="text" id="addusername" name="addusername" placeholder="Name here">
+        </div>
+    </div>
+</body>
+
+</html>

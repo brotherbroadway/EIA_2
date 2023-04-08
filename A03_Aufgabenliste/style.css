@@ -1,0 +1,250 @@
+body {
+    background-color: rgb(54, 54, 54);
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+h1 {
+    color: rgb(255, 96, 23);
+    text-align: center;
+}
+
+h2 {
+    color: rgb(209, 209, 209);
+}
+
+h3 {
+    margin-top: 5px;
+    float: left;
+    text-align: left;
+    font-size: 22px;
+    color: rgb(224, 205, 31);
+}
+
+p {
+    color: rgb(192, 192, 192);
+}
+
+.removetaskbttn {
+    float: right;
+    font-weight: bolder;
+    color: rgb(231, 231, 231);
+    background-color: rgb(102, 102, 102);
+    margin: -15px;
+    padding-left: 3px;
+    padding-right: 3px;
+    border-color: rgb(102, 102, 102);
+    border-radius: 2px;
+    border-style: solid;
+}
+
+.removetaskbttn:hover {
+    background-color: rgb(69, 69, 69);
+    border-color: rgb(69, 69, 69);
+}
+
+.removeuserbttn {
+    float: right;
+    font-weight: bolder;
+    color: rgb(231, 231, 231);
+    background-color: rgb(69, 69, 69);
+    margin: -15px;
+    padding-left: 4px;
+    padding-right: 4px;
+    border-color: rgb(69, 69, 69);
+    border-radius: 2px;
+    border-style: solid;
+}
+
+.removeuserbttn:hover {
+    background-color: rgb(42, 42, 42);
+    border-color: rgb(42, 42, 42);
+}
+
+.desc {
+    float: left;
+    text-align: left;
+    font-weight: bold;
+    color: rgb(248, 248, 248);
+    margin-top: -5px;
+    margin-left: 2px;
+}
+
+.deadlinetask {
+    padding-top: 20px;
+    float: right;
+    text-align: right;
+    font-weight: bold;
+    color: rgb(255, 96, 23);
+}
+
+.comments {
+    float: left;
+    text-align: left;
+    margin-left: 2px;
+    padding-bottom: 5px;
+}
+
+.commentary {
+    margin-top: -2px;
+}
+
+.task {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 15px;
+    background-color: rgb(90, 90, 90);
+    border-radius: 5px;
+}
+
+.addtask {
+    display: inline-table;
+    text-align: center;
+    width: 40%;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: -10px;
+    padding-bottom: 20px;
+    background-color: rgb(90, 90, 90);
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.addtaskbutton {
+    flex: right;
+    font-weight: bolder;
+    color: rgb(231, 231, 231);
+    background-color: rgb(102, 102, 102);
+    margin: -15px;
+    padding-left: 6px;
+    padding-right: 6px;
+    border-color: rgb(102, 102, 102);
+    border-radius: 2px;
+    border-style: solid;
+}
+
+.addtaskbutton:hover {
+    background-color: rgb(69, 69, 69);
+    border-color: rgb(69, 69, 69);
+}
+
+.userscontainer {
+    text-align: center;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+}
+
+.user {
+    display: inline-table;
+    width: 300px;
+    margin: 2%;
+    padding: 15px;
+    background-color: rgb(80, 80, 80);
+    border-radius: 25px;
+}
+
+.adduser {
+    display: inline-table;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    width: 200px;
+    margin: 2%;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-bottom: 15px;
+    background-color: rgb(80, 80, 80);
+    border-radius: 25px;
+    font-weight: bold;
+}
+
+#adduserbutton {
+    font-weight: bolder;
+    font-size: 16px;
+    color: rgb(231, 231, 231);
+    background-color: rgb(102, 102, 102);
+    margin-top: -10px;
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-bottom: 2px;
+    border-color: rgb(102, 102, 102);
+    border-radius: 2px;
+    border-style: solid;
+}
+
+#adduserbutton:hover {
+    background-color: rgb(69, 69, 69);
+    border-color: rgb(69, 69, 69);
+}
+
+input[type=text] {
+    color: rgb(231, 231, 231);
+    background-color: rgb(83, 83, 83);
+    border-color: rgb(73, 73, 73);
+    border-style: solid;
+    border-radius: 2px;
+}
+
+.taskcommentinput {
+    width: 60%;
+}
+
+.taskcommentinput:focus {
+    background-color: rgb(66, 66, 66);
+}
+
+.taskslider {
+    -webkit-appearance: none;
+    appearance: none;
+    display: inline-block;
+    flex: right;
+    margin-top: 20px;
+    width: 42%;
+    height: 5px;
+    border-radius: 5px;
+    outline: none;
+    background-color: rgb(209, 209, 209);
+    outline: none;
+    opacity: 0.7;
+}
+
+.taskslider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 10px;
+    height: 25px;
+    border-radius: 10px;
+    background: rgb(255, 82, 14);
+    cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    background-color: rgb(192, 192, 192);
+    cursor: pointer;
+}
+
+.slider:focus {
+    background-color: rgb(209, 209, 209);
+}
+
+.slidercontainer {
+    font-weight: bold;
+    margin-bottom: -10px;
+}
+
+.sliderspan {
+    color: red;
+}
+
+#addusername {
+    margin-top: 15px;
+    text-align: center;
+}
+
+#addusername:focus {
+    background-color: rgb(66, 66, 66);
+}
