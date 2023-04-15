@@ -241,18 +241,24 @@ Quellen: -
 
     // opens add task form
     function showAddTaskform(_id: number, _editing: boolean, _editID: number): void {
+        // get taskform, checkbox and label
         let thisTaskform: HTMLElement | null = document.getElementById("addtaskbox" + _id);
         let thisCheckbox: HTMLInputElement = <HTMLInputElement>allEditCheckboxes[_id];
         let thisLabel: HTMLElement | null = document.getElementById("checklabel" + _id);
 
-        console.log("ID: " + _id + ", Editing?: " + _editing + ", EditID: " + _editID);
+        //console.log("ID: " + _id + ", Editing?: " + _editing + ", EditID: " + _editID);
 
+        // check if accessed through edit button
         if (_editing) {
+            // make sure checkbox is checked
             thisCheckbox.checked = true;
             editingID = _editID;
+            
+            // show checkbox and label
             thisCheckbox.setAttribute("style", "display: inline-block");
             thisLabel?.setAttribute("style", "display: inline-block");
 
+            // insert editing task name, deadline and description
             let thisFieldName: HTMLInputElement = <HTMLInputElement>allSubmitNames[_id];
             console.log(allTheTasks.thisList[_editID].title);
             thisFieldName.value = allTheTasks.thisList[_editID].title;
@@ -263,11 +269,13 @@ Quellen: -
             let thisFieldDesc: HTMLInputElement = <HTMLInputElement>allSubmitDescs[_id];
             thisFieldDesc.value = allTheTasks.thisList[_editID].desc;
         } else {
+            // make sure checkbox is unchecked, hide checkbox and label
             thisCheckbox.checked = false;
             thisCheckbox.setAttribute("style", "display: none");
             thisLabel?.setAttribute("style", "display: none");
         }
 
+        // show taskform
         thisTaskform?.setAttribute("style", "display: block");
     }
 }

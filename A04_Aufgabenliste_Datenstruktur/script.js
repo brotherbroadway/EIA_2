@@ -204,15 +204,20 @@ Quellen: -
     }
     // opens add task form
     function showAddTaskform(_id, _editing, _editID) {
+        // get taskform, checkbox and label
         let thisTaskform = document.getElementById("addtaskbox" + _id);
         let thisCheckbox = allEditCheckboxes[_id];
         let thisLabel = document.getElementById("checklabel" + _id);
-        console.log("ID: " + _id + ", Editing?: " + _editing + ", EditID: " + _editID);
+        //console.log("ID: " + _id + ", Editing?: " + _editing + ", EditID: " + _editID);
+        // check if accessed through edit button
         if (_editing) {
+            // make sure checkbox is checked
             thisCheckbox.checked = true;
             editingID = _editID;
+            // show checkbox and label
             thisCheckbox.setAttribute("style", "display: inline-block");
             thisLabel === null || thisLabel === void 0 ? void 0 : thisLabel.setAttribute("style", "display: inline-block");
+            // insert editing task name, deadline and description
             let thisFieldName = allSubmitNames[_id];
             console.log(A04_Aufgabenliste_Datenstruktur.allTheTasks.thisList[_editID].title);
             thisFieldName.value = A04_Aufgabenliste_Datenstruktur.allTheTasks.thisList[_editID].title;
@@ -222,10 +227,12 @@ Quellen: -
             thisFieldDesc.value = A04_Aufgabenliste_Datenstruktur.allTheTasks.thisList[_editID].desc;
         }
         else {
+            // make sure checkbox is unchecked, hide checkbox and label
             thisCheckbox.checked = false;
             thisCheckbox.setAttribute("style", "display: none");
             thisLabel === null || thisLabel === void 0 ? void 0 : thisLabel.setAttribute("style", "display: none");
         }
+        // show taskform
         thisTaskform === null || thisTaskform === void 0 ? void 0 : thisTaskform.setAttribute("style", "display: block");
     }
 })(A04_Aufgabenliste_Datenstruktur || (A04_Aufgabenliste_Datenstruktur = {}));
