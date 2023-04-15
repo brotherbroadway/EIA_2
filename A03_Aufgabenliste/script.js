@@ -116,3 +116,4 @@ Quellen: -
         }
     }
 })(A03_Aufgabenliste || (A03_Aufgabenliste = {}));
+//# sourceMappingURL=script.js.map

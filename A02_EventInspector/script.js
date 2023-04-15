@@ -85,3 +85,4 @@ var A02_EventInspector;
         console.log(_event.composedPath());
     }
 })(A02_EventInspector || (A02_EventInspector = {}));
+//# sourceMappingURL=script.js.map

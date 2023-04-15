@@ -33,3 +33,4 @@ Quellen: -
         return output;
     }
 })(A01_RandomPoem || (A01_RandomPoem = {}));
+//# sourceMappingURL=script.js.map
