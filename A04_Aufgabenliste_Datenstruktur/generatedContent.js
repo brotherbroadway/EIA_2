@@ -60,7 +60,9 @@ Quellen: -
             let thisDeadline = document.createElement("p");
             thisDeadline.classList.add("deadlinetask");
             thisDeadline.setAttribute("id", "deadlinetask" + i);
-            thisDeadline.innerHTML = _allTasks.thisList[i].deadline;
+            thisDeadline.innerHTML = addZeroToDayOrMonth(_allTasks.thisList[i].deadline.getDate())
+                + "." + addZeroToDayOrMonth(_allTasks.thisList[i].deadline.getMonth() + 1)
+                + "." + _allTasks.thisList[i].deadline.getFullYear();
             thisTask.appendChild(thisDeadline);
             // add task description
             let thisDesc = document.createElement("p");
@@ -135,5 +137,13 @@ Quellen: -
         }
     }
     A04_Aufgabenliste_Datenstruktur.removeContent = removeContent;
+    // adds leading zero to deadline display if day or month is less than 10
+    function addZeroToDayOrMonth(_date) {
+        let dateString = "" + _date;
+        if (_date < 10) {
+            dateString = "0" + dateString;
+        }
+        return dateString;
+    }
 })(A04_Aufgabenliste_Datenstruktur || (A04_Aufgabenliste_Datenstruktur = {}));
 //# sourceMappingURL=generatedContent.js.map

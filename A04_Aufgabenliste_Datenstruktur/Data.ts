@@ -10,7 +10,7 @@ Quellen: -
     export interface TaskItem {
         owner: number;
         title: string;
-        deadline: string;
+        deadline: Date;
         desc: string;
         comments: string[];
         completion: number;
@@ -25,7 +25,7 @@ Quellen: -
             {
                 owner: 0,
                 title: "The Dishes",
-                deadline: "15.04.2023",
+                deadline: new Date("2023.04.15"),
                 desc: "Do the dishes pls",
                 comments: ["Can't someone else do it?", "No, you do it"],
                 completion: 0
@@ -33,7 +33,7 @@ Quellen: -
             {
                 owner: 1,
                 title: "Dust",
-                deadline: "02.06.2023",
+                deadline: new Date("2023-06-02"),
                 desc: "Please dust off your shelves :)",
                 comments: ["They are already clean :)"],
                 completion: 2
@@ -41,7 +41,7 @@ Quellen: -
             {
                 owner: 1,
                 title: "Trash",
-                deadline: "20.04.2023",
+                deadline: new Date("2023-04-20"),
                 desc: "Take out the trash!",
                 comments: ["Will do soon™"],
                 completion: 1

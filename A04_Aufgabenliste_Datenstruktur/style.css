@@ -168,6 +168,16 @@ input[type=text] {
     border-radius: 2px;
 }
 
+input[type=date] {
+    color: rgb(231, 231, 231);
+    background-color: rgb(83, 83, 83);
+    border-color: rgb(73, 73, 73);
+    border-style: solid;
+    border-radius: 2px;
+    margin-left: -1px;
+    width: 98%;
+}
+
 .taskcommentinput {
     width: 60%;
     margin-bottom: 15px;

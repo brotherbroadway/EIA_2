@@ -156,14 +156,14 @@ Quellen: -
         let thisFieldName = allSubmitNames[_id];
         let thisName = thisFieldName.value;
         let thisFieldDate = allSubmitDates[_id];
-        let thisDate = thisFieldDate.value;
+        let thisDate = thisFieldDate.valueAsDate;
         let thisFieldDesc = allSubmitDescs[_id];
         let thisDesc = thisFieldDesc.value;
         console.log("Taskname: " + thisName);
         console.log("Deadline: " + thisDate);
         console.log("Description: " + thisDesc);
         console.log("Adding new task to user#" + (_id) + "...");
-        if (thisName != "" && thisDate != "" && thisDesc != "") {
+        if (thisName != "" && thisDate != null && thisDesc != "") {
             // recycle content
             A04_Aufgabenliste_Datenstruktur.removeContent(A04_Aufgabenliste_Datenstruktur.allTheTasks);
             let thisTaskItem = {
@@ -222,7 +222,11 @@ Quellen: -
             console.log(A04_Aufgabenliste_Datenstruktur.allTheTasks.thisList[_editID].title);
             thisFieldName.value = A04_Aufgabenliste_Datenstruktur.allTheTasks.thisList[_editID].title;
             let thisFieldDate = allSubmitDates[_id];
-            thisFieldDate.value = A04_Aufgabenliste_Datenstruktur.allTheTasks.thisList[_editID].deadline;
+            let thisDate = A04_Aufgabenliste_Datenstruktur.allTheTasks.thisList[_editID].deadline;
+            thisDate = new Date("" + (thisDate.getMonth() + 1) // date doesn't add 1 to day or month otherwise
+                + " " + (thisDate.getDate() + 1)
+                + ", " + thisDate.getFullYear());
+            thisFieldDate.valueAsDate = thisDate;
             let thisFieldDesc = allSubmitDescs[_id];
             thisFieldDesc.value = A04_Aufgabenliste_Datenstruktur.allTheTasks.thisList[_editID].desc;
         }

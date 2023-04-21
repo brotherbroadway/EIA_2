@@ -183,7 +183,7 @@ Quellen: -
         let thisName: string = thisFieldName.value;
 
         let thisFieldDate: HTMLInputElement = <HTMLInputElement>allSubmitDates[_id];
-        let thisDate: string = thisFieldDate.value;
+        let thisDate: Date = <Date>thisFieldDate.valueAsDate;
 
         let thisFieldDesc: HTMLInputElement = <HTMLInputElement>allSubmitDescs[_id];
         let thisDesc: string = thisFieldDesc.value;
@@ -193,7 +193,7 @@ Quellen: -
         console.log("Description: " + thisDesc);
         console.log("Adding new task to user#" + (_id) + "...");
 
-        if (thisName != "" && thisDate != "" && thisDesc != "") {
+        if (thisName != "" && thisDate != null && thisDesc != "") {
             // recycle content
             removeContent(allTheTasks);
             let thisTaskItem: TaskItem = {
@@ -264,7 +264,11 @@ Quellen: -
             thisFieldName.value = allTheTasks.thisList[_editID].title;
 
             let thisFieldDate: HTMLInputElement = <HTMLInputElement>allSubmitDates[_id];
-            thisFieldDate.value = allTheTasks.thisList[_editID].deadline;
+            let thisDate: Date = allTheTasks.thisList[_editID].deadline;
+            thisDate = new Date("" + (thisDate.getMonth() + 1) // date doesn't add 1 to day or month otherwise
+                + " " + (thisDate.getDate() + 1)
+                + ", " + thisDate.getFullYear());
+            thisFieldDate.valueAsDate = thisDate;
 
             let thisFieldDesc: HTMLInputElement = <HTMLInputElement>allSubmitDescs[_id];
             thisFieldDesc.value = allTheTasks.thisList[_editID].desc;
