@@ -3,7 +3,7 @@ namespace A06_DatabaseServer {
 Aufgabe: L06_DatabaseServer
 Name: Jona Ruder
 Matrikel: 265274
-Datum: 27.04.2023
+Datum: 29.04.2023
 Quellen: -
 */
 
@@ -32,16 +32,15 @@ Quellen: -
     var allSubmitDates = document.querySelectorAll(".addtaskdate");
     var allSubmitDescs = document.querySelectorAll(".addtaskdesc");
 
-    let allTheTasks: AllTasks;
-
     let myUrl: string = "https://webuser.hs-furtwangen.de/~ruderjon/Database/?";
     var taskTest;
+    let taskID: number[] = [];
+
+    interface FormDataJSON {
+        [key: string]: FormDataEntryValue | FormDataEntryValue[];
+    }
 
     async function handleLoad(): Promise<void> {
-        let response: Response = await fetch("Data.json");
-        let taskResponse: string = await response.text();
-        allTheTasks = JSON.parse(taskResponse);
-
         // testing server
         let responseTest: Response = await fetch(myUrl + "command=show");
         let taskResponseTest: string = await responseTest.text();
@@ -49,6 +48,8 @@ Quellen: -
         taskTest = JSON.parse(taskResponseTest);
         let taskTestlist: string[] = taskTest["data"];
         let taskTestBool: boolean = false;
+
+        console.log(taskTestlist);
 
         // finding correct collection
         for (let i: number = 0; i < taskTestlist.length; i++) {
@@ -59,31 +60,36 @@ Quellen: -
             }
         }
 
+        // creating new Tasks Collection if none was found
         if (!taskTestBool) {
-            console.log("Tasks Collection NOT found");
+            console.log("Tasks Collection NOT found, creating new one...");
+            let query: URLSearchParams = new URLSearchParams();
+            query.set("command", "create");
+            query.set("collection", "Tasks")
+            await fetch(myUrl + query.toString());
         }
 
-        // generate content from data
-        generateContent(allTheTasks);
+        // generate content from server data
+        generateContent(await getServerResponse());
 
         // update number of users (will also get updated when adding new users)
         userCount = document.getElementsByClassName("user").length;
 
-        updateLiveData();
+        //updateLiveData();
 
         // add listeners to remove user- and add task buttons
         for (let i: number = 0; i < userCount; i++) {
             allAddTaskButtons[i].addEventListener("click", function () {
-                showAddTaskform(i, false, 0);
+                showAddTaskform(i, false);
             });
             allSubmitTaskButtons[i].addEventListener("click", function () {
-                submitNewTask(i);
+                submitNewTask(i, taskID[i]);
             });
         }
     }
 
     // updates live data that was modified
-    function updateLiveData(): void {
+    export function updateLiveData(): void {
         // update number of tasks (will also get updated when adding new tasks)
         taskCount = document.getElementsByClassName("task").length;
 
@@ -96,65 +102,93 @@ Quellen: -
         allEditTaskButtons = document.querySelectorAll(".edittaskbttn");
         allEditCheckboxes = document.querySelectorAll(".editcheckbox");
 
-        // get initial slider status
-        for (let i: number = 0; i < taskCount; i++) {
-            sliderChange(i);
-        }
+        taskID = [];
 
         // add listeners to comments, sliders and remove task buttons
         for (let i: number = 0; i < taskCount; i++) {
+            let sliderOutput: HTMLInputElement = <HTMLInputElement>allSliders[i];
+            let sliderID: string = sliderOutput.id;
+            sliderID = sliderID.replace(/\D/g,'');
+            taskID.push(parseInt(sliderID));
+            allSliders[i]
+            sliderChange(i, taskID[i]);
+
             allSliders[i].addEventListener("input", function () {
-                sliderChange(i);
+                sliderChange(i, taskID[i]);
             });
             allCommentButtons[i].addEventListener("click", function () {
-                makeComment(i);
+                makeComment(i, taskID[i]);
             })
             allRemoveTaskButtons[i].addEventListener("click", function () {
-                removeTask(i);
+                removeTask(i, taskID[i]);
             })
             allEditTaskButtons[i].addEventListener("click", function () {
-                showAddTaskform(allTheTasks.thisList[i].owner, true, i);
+                showAddTaskform(jsonAllTasks.thisList[taskID[i]].owner, true, taskID[i]);
             })
         }
     }
 
     // changes status when slider gets updated
-    function sliderChange(_id: number): void {
+    async function sliderChange(_queryID: number, _id: number): Promise<void> {
         // get slider values
-        let thisSlider: HTMLInputElement = <HTMLInputElement>allSliders[_id];
+        let thisSlider: HTMLInputElement = <HTMLInputElement>allSliders[_queryID];
         //let thisSlider: HTMLInputElement = <HTMLInputElement>document.getElementById("taskslider" + _id);
         let sliderValue: number = thisSlider.valueAsNumber;
         // get output span
         let output: HTMLSpanElement = <HTMLSpanElement>document.getElementById("slider" + _id);
         let sliderText: string = "";
 
-        // assign outputs
-        switch (sliderValue) {
-            case 1:
-                sliderText = "WIP";
-                output.style.color = "orange";
-                break;
-            case 2:
-                sliderText = "Done!";
-                output.style.color = "#00ddff";
-                break;
-            default:
-                sliderText = "..."
-                output.style.color = "red";
-                break;
+        if (sliderValue != null && output != null) {
+            // assign outputs
+            switch (sliderValue) {
+                case 1:
+                    sliderText = "WIP";
+                    output.style.color = "orange";
+                    break;
+                case 2:
+                    sliderText = "Done!";
+                    output.style.color = "#00ddff";
+                    break;
+                default:
+                    sliderText = "..."
+                    output.style.color = "red";
+                    break;
+            }
+
+            jsonAllTasks.thisList[_id].completion = sliderValue;
+
+            output.innerHTML = sliderText;
+
+            let formData: FormData = new FormData();
+            formData.append("completion", JSON.stringify(jsonAllTasks.thisList[_id].completion));
+
+            let json: FormDataJSON = {};
+            
+            // convert formData into url-useable format
+            for (let key of formData.keys())
+            if (!json[key]) {
+                let values: FormDataEntryValue[] = formData.getAll(key);
+                json[key] = values.length > 1 ? values : values[0];
+            }
+
+            // send updated completion to server
+            let query: URLSearchParams = new URLSearchParams();
+            query.set("command", "update");
+            query.set("collection", "Tasks");
+            query.set("id", jsonIDs[_id]);
+            query.set("data", "" + JSON.stringify(json));
+            console.log("completion: " + JSON.stringify(json));
+            //console.log("ID: " + jsonIDs[_id] + " QUERY: " + query.toString());
+            await fetch(myUrl + query.toString());
         }
 
-        allTheTasks.thisList[_id].completion = sliderValue;
-
-        output.innerHTML = sliderText;
-
-        console.log("Task#" + (_id + 1) + " progress updated to " + sliderText);
+        console.log("Task#" + _id + " progress updated to " + sliderText);
     }
 
     // shows when changes has been made to a comment input field
-    async function makeComment(_id: number): Promise<void> {
+    async function makeComment(_queryID: number, _id: number): Promise<void> {
         // get comment field
-        let thisComment: HTMLInputElement = <HTMLInputElement>allCommentFields[_id];
+        let thisComment: HTMLInputElement = <HTMLInputElement>allCommentFields[_queryID];
         let commentValue: string = thisComment.value;
 
         // only accept comment if field isn't empty
@@ -163,21 +197,43 @@ Quellen: -
             let commentParagraph = document.createElement("p");
             commentParagraph.classList.add("commentary");
             commentParagraph.innerHTML = '"' + commentValue + '"';
-            allCommentDivs[_id].appendChild(commentParagraph);
+            allCommentDivs[_queryID].appendChild(commentParagraph);
             thisComment.value = "";
 
-            allTheTasks.thisList[_id].comments.push(commentValue);
+            let theseComments: string[] = JSON.parse(jsonAllTasks.thisList[_id].comments);
+
+            theseComments.push(commentValue);
+            console.log(theseComments);
+            jsonAllTasks.thisList[_id].comments = JSON.stringify(theseComments);
+            console.log(jsonAllTasks.thisList[_id].comments);
 
             // checking if it submitted properly
             //console.log("Comment '" + commentValue + "' submitted.");
-            let allComments: string[] = allTheTasks.thisList[_id].comments;
+            let allComments: string[] = JSON.parse(jsonAllTasks.thisList[_id].comments);
 
             // send form data prototype
             let formData: FormData = new FormData();
-            formData.append("comments", JSON.stringify(allTheTasks.thisList[_id].comments));
-            //console.log(formData.getAll("comments"));
-            let query: URLSearchParams = new URLSearchParams(<any>formData);
-            await fetch("index.html?" + query.toString());
+            formData.append("comments", jsonAllTasks.thisList[_id].comments);
+            console.log(formData.getAll("comments"));
+
+            let json: FormDataJSON = {};
+            
+            // convert formData into url-useable format
+            for (let key of formData.keys())
+            if (!json[key]) {
+                let values: FormDataEntryValue[] = formData.getAll(key);
+                json[key] = values.length > 1 ? values : values[0];
+            }
+
+            // send updated comments to server
+            let query: URLSearchParams = new URLSearchParams();
+            query.set("command", "update");
+            query.set("collection", "Tasks");
+            query.set("id", jsonIDs[_id]);
+            query.set("data", "" + JSON.stringify(json));
+            console.log("thiscomment: " + JSON.stringify(json));
+            console.log("ID: " + jsonIDs[_id] + " QUERY: " + query.toString());
+            await fetch(myUrl + query.toString());
 
             let thisTaskname: string | undefined = document.getElementById("taskname" + _id)?.innerHTML;
 
@@ -192,18 +248,29 @@ Quellen: -
     }
 
     // removes this task
-    function removeTask(_id: number): void {
+    async function removeTask(_queryID: number, _id: number): Promise<void> {
         let thisTaskname: string | undefined = document.getElementById("taskname" + _id)?.innerHTML;
 
         if (confirm("This will remove " + thisTaskname + "! Are you sure?")) {
             // remove content, splice out this task, make new content, update data
-            removeContent(allTheTasks);
+            removeContent(jsonAllTasks);
 
-            allTheTasks.thisList.splice(_id, 1);
+            // remove task from server
+            let query: URLSearchParams = new URLSearchParams();
+            query.set("command", "delete");
+            query.set("collection", "Tasks");
+            query.set("id", jsonIDs[_id]);
+            console.log(query.toString());
+            await fetch(myUrl + query.toString());
 
-            generateContent(allTheTasks);
+            console.log("Task: " + jsonAllTasks.thisList[_id].title + "; jsonID: " + jsonIDs[_id]);
 
-            updateLiveData();
+            jsonAllTasks.thisList.splice(_id, 1);
+            jsonIDs.splice(_id, 1);
+
+            generateContent(await getServerResponse());
+
+            //updateLiveData();
 
             console.log("Removed task '" + thisTaskname + "'!");
         } else {
@@ -212,71 +279,89 @@ Quellen: -
     }
 
     // will also open new div to enter deadline, name and description
-    async function submitNewTask(_id: number): Promise<void> {
-        let thisCheckbox: HTMLInputElement = <HTMLInputElement>allEditCheckboxes[_id];
+    async function submitNewTask(_queryID: number, _id: number): Promise<void> {
+        let thisCheckbox: HTMLInputElement = <HTMLInputElement>allEditCheckboxes[_queryID];
 
         // get input of input fields
-        let thisFieldName: HTMLInputElement = <HTMLInputElement>allSubmitNames[_id];
+        let thisFieldName: HTMLInputElement = <HTMLInputElement>allSubmitNames[_queryID];
         let thisName: string = thisFieldName.value;
 
-        let thisFieldDate: HTMLInputElement = <HTMLInputElement>allSubmitDates[_id];
+        let thisFieldDate: HTMLInputElement = <HTMLInputElement>allSubmitDates[_queryID];
         let thisDate: Date = <Date>thisFieldDate.valueAsDate;
 
-        let thisFieldDesc: HTMLInputElement = <HTMLInputElement>allSubmitDescs[_id];
+        let thisFieldDesc: HTMLInputElement = <HTMLInputElement>allSubmitDescs[_queryID];
         let thisDesc: string = thisFieldDesc.value;
 
         console.log("Taskname: " + thisName);
         console.log("Deadline: " + thisDate);
         console.log("Description: " + thisDesc);
-        console.log("Adding new task to user#" + (_id) + "...");
+        console.log("Adding new task to user#" + (_queryID) + "...");
 
         if (thisName != "" && thisDate != null && thisDesc != "") {
             // recycle content
-            removeContent(allTheTasks);
+            removeContent(jsonAllTasks);
             let thisTaskItem: TaskItem = {
-                owner: _id,
+                owner: _queryID,
                 title: thisName,
                 deadline: thisDate,
                 desc: thisDesc,
-                comments: [],
+                comments: "[]",
                 completion: 0
             };
 
             // set up form data
-            let thisForm: HTMLFormElement = <HTMLFormElement>document.getElementById("form" + _id);
+            let thisForm: HTMLFormElement = <HTMLFormElement>document.getElementById("form" + _queryID);
             let formData: FormData = new FormData(thisForm);
-            formData.append("owner", "" + _id);
+            formData.append("owner", "" + _queryID);
             formData.delete("editingCheck");
+
+            let query: URLSearchParams = new URLSearchParams();
 
             // checks if editing is enabled
             if (!thisCheckbox.checked) {
                 formData.append("comments", "[]");
                 formData.append("completion", "" + 0);
-                allTheTasks.thisList.push(thisTaskItem);
+                jsonAllTasks.thisList.push(thisTaskItem);
+                query.set("command", "insert");
+                query.set("collection", "Tasks");
+
             } else {
                 // overrides previous entry if editing is enabled
-                formData.append("comments", JSON.stringify(allTheTasks.thisList[editingID].comments));
-                thisTaskItem.comments = allTheTasks.thisList[editingID].comments;
-                formData.append("completion", "" + allTheTasks.thisList[editingID].completion);
-                thisTaskItem.completion = allTheTasks.thisList[editingID].completion;
-                allTheTasks.thisList[editingID] = thisTaskItem;
+                formData.append("comments", jsonAllTasks.thisList[editingID].comments);
+                thisTaskItem.comments = jsonAllTasks.thisList[editingID].comments;
+                formData.append("completion", "" + jsonAllTasks.thisList[editingID].completion);
+                thisTaskItem.completion = jsonAllTasks.thisList[editingID].completion;
+                jsonAllTasks.thisList[editingID] = thisTaskItem;
                 thisCheckbox.checked = false;
+                query.set("command", "update");
+                query.set("collection", "Tasks");
+                query.set("id", jsonIDs[editingID]);
             }
 
-            // send form data
-            let query: URLSearchParams = new URLSearchParams(<any>formData);
-            await fetch("index.html?" + query.toString());
+            let json: FormDataJSON = {};
+            
+            // convert formData into url-useable format
+            for (let key of formData.keys())
+            if (!json[key]) {
+                let values: FormDataEntryValue[] = formData.getAll(key);
+                json[key] = values.length > 1 ? values : values[0];
+            }
 
-            // get new content
-            generateContent(allTheTasks);
+            // send new task to server
+            query.set("data", "" + JSON.stringify(json));
+            console.log("QUERY: " + query.toString() + "; FORMDATA: " + JSON.stringify(json));
+            await fetch(myUrl + query.toString());
 
             // hide submit task div
-            let thisTaskform: HTMLElement | null = document.getElementById("addtaskbox" + _id);
+            let thisTaskform: HTMLElement | null = document.getElementById("addtaskbox" + _queryID);
 
             thisTaskform?.setAttribute("style", "display: none");
 
+            // get new content
+            generateContent(await getServerResponse());
+
             // update live data with the new stuff
-            updateLiveData();
+            //updateLiveData();
 
             thisFieldName.value = "";
             thisFieldDate.value = "";
@@ -291,8 +376,9 @@ Quellen: -
     }
 
     // opens add task form
-    function showAddTaskform(_id: number, _editing: boolean, _editID: number): void {
+    function showAddTaskform(_id: number, _editing: boolean, _editID: number = 0): void {
         // get taskform, checkbox and label
+        //console.log("OwnerID: " + jsonAllTasks.thisList[taskID[_id]].owner);
         let thisTaskform: HTMLElement | null = document.getElementById("addtaskbox" + _id);
         let thisCheckbox: HTMLInputElement = <HTMLInputElement>allEditCheckboxes[_id];
         let thisLabel: HTMLElement | null = document.getElementById("checklabel" + _id);
@@ -304,6 +390,8 @@ Quellen: -
             // make sure checkbox is checked
             thisCheckbox.checked = true;
             editingID = _editID;
+
+            console.log("EditID: " + _editID);
             
             // show checkbox and label
             thisCheckbox.setAttribute("style", "display: inline-block");
@@ -311,18 +399,18 @@ Quellen: -
 
             // insert editing task name, deadline and description
             let thisFieldName: HTMLInputElement = <HTMLInputElement>allSubmitNames[_id];
-            console.log(allTheTasks.thisList[_editID].title);
-            thisFieldName.value = allTheTasks.thisList[_editID].title;
+            console.log(jsonAllTasks.thisList[_editID].title);
+            thisFieldName.value = jsonAllTasks.thisList[_editID].title;
 
             let thisFieldDate: HTMLInputElement = <HTMLInputElement>allSubmitDates[_id];
-            let thisDate: Date = new Date(allTheTasks.thisList[_editID].deadline);
+            let thisDate: Date = new Date(jsonAllTasks.thisList[_editID].deadline);
             thisDate = new Date("" + (thisDate.getMonth() + 1) // date doesn't add 1 to day or month otherwise
                 + " " + (thisDate.getDate() + 1)
                 + ", " + thisDate.getFullYear());
             thisFieldDate.valueAsDate = thisDate;
 
             let thisFieldDesc: HTMLInputElement = <HTMLInputElement>allSubmitDescs[_id];
-            thisFieldDesc.value = allTheTasks.thisList[_editID].desc;
+            thisFieldDesc.value = jsonAllTasks.thisList[_editID].desc;
         } else {
             // make sure checkbox is unchecked, hide checkbox and label
             thisCheckbox.checked = false;
@@ -332,5 +420,14 @@ Quellen: -
 
         // show taskform
         thisTaskform?.setAttribute("style", "display: block");
+    }
+
+    async function getServerResponse(): Promise<string> {
+        let responseQuery: URLSearchParams = new URLSearchParams();
+        responseQuery.set("command", "find");
+        responseQuery.set("collection", "Tasks");
+        let responseServe: Response = await fetch(myUrl + responseQuery.toString());
+        let taskResponseServe: string = await responseServe.text();
+        return taskResponseServe;
     }
 }

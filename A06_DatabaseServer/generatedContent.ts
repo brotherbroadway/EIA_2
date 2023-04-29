@@ -3,7 +3,7 @@ namespace A06_DatabaseServer {
 Aufgabe: L06_DatabaseServer
 Name: Jona Ruder
 Matrikel: 265274
-Datum: 27.04.2023
+Datum: 29.04.2023
 Quellen: -
 */
     export interface TaskItem {
@@ -11,46 +11,77 @@ Quellen: -
         title: string;
         deadline: Date;
         desc: string;
-        comments: string[];
+        comments: string;
         completion: number;
     }
 
     export interface AllTasks {
         [name: string]: TaskItem[];
     }
+    
+    export let jsonAllTasks: AllTasks;
+    export let jsonIDs: string[];
 
     // create live tasks on website
-    export function generateContent(_allTasks: AllTasks): void {
+    export function generateContent(_taskResponse: string = ""): void {
         // get different user's task divs
-        let taskDiv0: HTMLElement | null = document.getElementById("tasks0");
-        let taskDiv1: HTMLElement | null = document.getElementById("tasks1");
-        let taskDiv2: HTMLElement | null = document.getElementById("tasks2");
+        let taskDiv0: HTMLElement = <HTMLElement>document.getElementById("tasks0");
+        let taskDiv1: HTMLElement = <HTMLElement>document.getElementById("tasks1");
+        let taskDiv2: HTMLElement = <HTMLElement>document.getElementById("tasks2");
 
-        let taskAmount: number = _allTasks.thisList.length;
+        let taskAmount: number;
 
-        _allTasks.thisList.sort((a, b) => {
+        if (_taskResponse != "") {
+            let serverTasks = JSON.parse(_taskResponse)["data"];
+            let jsonTask: TaskItem;
+    
+            jsonAllTasks = {"thisList": []};
+            jsonIDs = [];
+    
+            for (let i: number = 0; i < Object.keys(serverTasks).length; i++) {
+                jsonTask = serverTasks[Object.keys(serverTasks)[i]];
+                console.log(jsonTask);
+                jsonAllTasks.thisList.push(jsonTask);
+            }
+            
+            //console.log("Title of Task#0: " + allServerTasks[id0][title]);
+    
+            console.log("Testing of Task#0: " + Object.keys(serverTasks)[0]);
+
+            taskAmount = jsonAllTasks.thisList.length;
+
+            for (let i: number = 0; i < taskAmount; i++) {
+                jsonIDs.push(Object.keys(serverTasks)[i]);
+            }
+        }
+
+        taskAmount = jsonAllTasks.thisList.length;
+
+        /*jsonAllTasks.thisList.sort((a, b) => {
             return a.owner - b.owner;
-        });
+        });*/
 
         // add all tasks to task divs
         for (let i: number = 0; i < taskAmount; i++) {
             // get owner id
-            let taskOwner: number = _allTasks.thisList[i].owner;
+            let ownerString: string = "" + jsonAllTasks.thisList[i].owner;
+            let taskOwner: number = parseInt(ownerString);
 
             // create div for this task
             let thisTask = document.createElement("div");
             thisTask.classList.add("task");
             thisTask.setAttribute("id", "task" + i);
+            console.log("TASKNAME: " + jsonAllTasks.thisList[i].title + "; OWNER: " + taskOwner);
             // add to correct owner
             switch (taskOwner) {
-                case 1:
-                    taskDiv1?.appendChild(thisTask);
+                case 1: 
+                    taskDiv1.appendChild(thisTask);
                     break;
                 case 2:
-                    taskDiv2?.appendChild(thisTask);
+                    taskDiv2.appendChild(thisTask);
                     break;
                 default:
-                    taskDiv0?.appendChild(thisTask);
+                    taskDiv0.appendChild(thisTask);
                     break;
             }
 
@@ -72,14 +103,14 @@ Quellen: -
             let thisName = document.createElement("h3");
             thisName.classList.add("taskname");
             thisName.setAttribute("id", "taskname" + i);
-            thisName.innerHTML = _allTasks.thisList[i].title;
+            thisName.innerHTML = jsonAllTasks.thisList[i].title;
             thisTask.appendChild(thisName);
 
             // add task deadline
             let thisDeadline = document.createElement("p");
             thisDeadline.classList.add("deadlinetask");
             thisDeadline.setAttribute("id", "deadlinetask" + i);
-            let thisDate: Date = new Date(_allTasks.thisList[i].deadline);
+            let thisDate: Date = new Date(jsonAllTasks.thisList[i].deadline);
             thisDeadline.innerHTML = addZeroToDayOrMonth(thisDate.getDate())
                 + "." + addZeroToDayOrMonth(thisDate.getMonth() + 1)
                 + "." + thisDate.getFullYear();
@@ -89,7 +120,7 @@ Quellen: -
             let thisDesc = document.createElement("p");
             thisDesc.classList.add("desc");
             thisDesc.setAttribute("id", "desc" + i);
-            thisDesc.innerHTML = _allTasks.thisList[i].desc;
+            thisDesc.innerHTML = jsonAllTasks.thisList[i].desc;
             thisTask.appendChild(thisDesc);
 
             // add comments div
@@ -115,7 +146,7 @@ Quellen: -
             theseComments.appendChild(thisCommentBttn);
 
             // add comments that have already been made
-            let madeComments: string[] = _allTasks.thisList[i].comments;
+            let madeComments: string[] = JSON.parse(jsonAllTasks.thisList[i].comments);
             for (let thatComment in madeComments) {
                 let thisComment = document.createElement("p");
                 thisComment.classList.add("commentary");
@@ -129,10 +160,10 @@ Quellen: -
             thisTask.appendChild(thisSliderContainer);
 
             // add task slider
-            let sliderCompletion: number = _allTasks.thisList[i].completion;
+            let sliderCompletion: number = jsonAllTasks.thisList[i].completion;
             // idk when this would happen, but better safe than sorry
             if (sliderCompletion > 2) {
-                _allTasks.thisList[i].completion = 2;
+                jsonAllTasks.thisList[i].completion = 2;
                 sliderCompletion = 2;
             }
             let thisSlider = document.createElement("input");
@@ -155,11 +186,14 @@ Quellen: -
             thisSpan.innerHTML = "...";
             thisSpanParagraph.appendChild(thisSpan);
         }
+
+        // so it loads in order
+        updateLiveData();
     }
 
     // removes all live created content
-    export function removeContent(_allTasks: AllTasks): void {
-        let taskAmount: number = _allTasks.thisList.length;
+    export function removeContent(jsonAllTasks: AllTasks): void {
+        let taskAmount: number = jsonAllTasks.thisList.length;
 
         for (let i: number = 0; i < taskAmount; i++) {
             let thisTask: HTMLElement | null = document.getElementById("task" + i);
