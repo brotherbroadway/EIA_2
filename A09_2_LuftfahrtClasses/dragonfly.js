@@ -115,7 +115,7 @@ Quellen: -
             // set next position via speed
             this.posX += this.speedX;
             this.posY += this.speedY;
-            // so dragonflies don't sink too low
+            // so dragonflies don't go too high
             if (this.posY < A09_2_LuftfahrtClasses.horizon + A09_2_LuftfahrtClasses.canvasH * (Math.random() * 0.1)) {
                 this.speedY = -this.speedY;
             }

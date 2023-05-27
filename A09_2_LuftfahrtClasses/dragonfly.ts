@@ -141,7 +141,7 @@ Quellen: -
             this.posX += this.speedX;
             this.posY += this.speedY;
 
-            // so dragonflies don't sink too low
+            // so dragonflies don't go too high
             if (this.posY < horizon + canvasH * (Math.random() * 0.1)) {
                 this.speedY = -this.speedY;
             } else if (getRandomBool()) {
