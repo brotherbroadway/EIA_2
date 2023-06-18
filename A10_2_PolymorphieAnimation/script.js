@@ -42,6 +42,7 @@ Quellen: -
             clearInterval(animationInterval);
             console.log("Interval cleared.");
         }
+        moveablesID = 0;
         let cloudAmount = getRandomNumber(A10_2_PolymorphieAnimation.canvasW * 0.0125, A10_2_PolymorphieAnimation.canvasW * 0.005);
         // background
         drawBackground();

@@ -49,6 +49,8 @@ Quellen: -
             console.log("Interval cleared.");
         }
 
+        moveablesID = 0;
+
         let cloudAmount: number = getRandomNumber(canvasW * 0.0125, canvasW * 0.005);
 
         // background
