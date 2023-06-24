@@ -313,8 +313,8 @@ Quellen: -
                 A11_LuftfahrtInteraktiv.crc2.textAlign = "center";
                 A11_LuftfahrtInteraktiv.crc2.strokeText("Click the heads of the", _width * -0.8, _height * -0.6);
                 A11_LuftfahrtInteraktiv.crc2.fillText("Click the heads of the", _width * -0.8, _height * -0.6);
-                A11_LuftfahrtInteraktiv.crc2.strokeText("ballon pilots to say hello!", _width * -0.8, _height * 0.3);
-                A11_LuftfahrtInteraktiv.crc2.fillText("ballon pilots to say hello!", _width * -0.8, _height * 0.3);
+                A11_LuftfahrtInteraktiv.crc2.strokeText("balloon pilots to say hello!", _width * -0.8, _height * 0.3);
+                A11_LuftfahrtInteraktiv.crc2.fillText("balloon pilots to say hello!", _width * -0.8, _height * 0.3);
                 break;
             case WIND.EAST:
                 buttonText = "EAST";

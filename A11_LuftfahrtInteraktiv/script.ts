@@ -384,8 +384,8 @@ Quellen: -
                 crc2.textAlign = "center";
                 crc2.strokeText("Click the heads of the", _width * -0.8, _height * -0.6);
                 crc2.fillText("Click the heads of the", _width * -0.8, _height * -0.6);
-                crc2.strokeText("ballon pilots to say hello!", _width * -0.8, _height * 0.3);
-                crc2.fillText("ballon pilots to say hello!", _width * -0.8, _height * 0.3);
+                crc2.strokeText("balloon pilots to say hello!", _width * -0.8, _height * 0.3);
+                crc2.fillText("balloon pilots to say hello!", _width * -0.8, _height * 0.3);
 
                 break;
             case WIND.EAST:
