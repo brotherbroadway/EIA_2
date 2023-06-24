@@ -124,7 +124,7 @@ Quellen: -
                     break;
             }
             // set next position via speed
-            this.posX += this.speedX;
+            this.posX += this.speedX * A11_LuftfahrtInteraktiv.windPower;
             this.posY += this.speedY;
             // so dragonflies don't go too high
             if (this.posY < A11_LuftfahrtInteraktiv.horizon + A11_LuftfahrtInteraktiv.canvasH * (Math.random() * 0.1)) {

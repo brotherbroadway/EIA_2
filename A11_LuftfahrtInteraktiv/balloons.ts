@@ -153,7 +153,7 @@ Quellen: -
             }
 
             // set next position via speed
-            this.posX += this.speedX;
+            this.posX += this.speedX * windPower;
             this.posY += this.speedY;
 
             // so balloons don't sink too low

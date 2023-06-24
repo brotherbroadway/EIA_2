@@ -30,6 +30,7 @@ Quellen: -
     let windBttnDirW = 0;
     let windBttnResetW = 0;
     let windBttnH = 0;
+    A11_LuftfahrtInteraktiv.windPower = 1.0;
     let backgroundData;
     A11_LuftfahrtInteraktiv.allMoveables = [];
     // Trees don't move so they're separate :) (they also only share like 1/4th of the constructor of the animated ones)
@@ -101,15 +102,24 @@ Quellen: -
         // set current wind direction depending on which button is "pressed" (if mouse pos is within button on canvas)
         if (mouseX > windBttnEastPosX && mouseX < windBttnEastPosX + windBttnDirW && mouseY > windBttnEastPosY && mouseY < windBttnEastPosY + windBttnH) {
             console.log("EAST BUTTON CLICKED", mouseX, mouseY);
+            if (A11_LuftfahrtInteraktiv.currentWindDir != WIND.EAST) {
+                A11_LuftfahrtInteraktiv.windPower = 1;
+            }
             A11_LuftfahrtInteraktiv.currentWindDir = WIND.EAST;
+            A11_LuftfahrtInteraktiv.windPower += 0.5;
         }
         else if (mouseX > windBttnWestPosX && mouseX < windBttnWestPosX + windBttnDirW && mouseY > windBttnEastPosY && mouseY < windBttnEastPosY + windBttnH) {
             console.log("WEST BUTTON CLICKED", mouseX, mouseY);
+            if (A11_LuftfahrtInteraktiv.currentWindDir != WIND.WEST) {
+                A11_LuftfahrtInteraktiv.windPower = 1;
+            }
             A11_LuftfahrtInteraktiv.currentWindDir = WIND.WEST;
+            A11_LuftfahrtInteraktiv.windPower += 0.5;
         }
         else if (mouseX > windBttnEastPosX && mouseX < windBttnEastPosX + windBttnResetW && mouseY > windBttnResetPosY && mouseY < windBttnResetPosY + windBttnH) {
             console.log("RESET BUTTON CLICKED", mouseX, mouseY);
             A11_LuftfahrtInteraktiv.currentWindDir = WIND.NONE;
+            A11_LuftfahrtInteraktiv.windPower = 1;
         }
         else {
             A11_LuftfahrtInteraktiv.allMoveables.forEach(function (e) {
@@ -304,7 +314,7 @@ Quellen: -
                 A11_LuftfahrtInteraktiv.crc2.fillStyle = fillColor;
                 A11_LuftfahrtInteraktiv.crc2.font = "bold italic " + (fontSize * 0.8) + "px Arial";
                 A11_LuftfahrtInteraktiv.crc2.textAlign = "center";
-                A11_LuftfahrtInteraktiv.crc2.fillText("Current Wind", _width * 0.5, _height * -1.4);
+                A11_LuftfahrtInteraktiv.crc2.fillText("Current Wind: " + Math.floor(A11_LuftfahrtInteraktiv.windPower * 100) / 100 + "x", _width * 0.5, _height * -1.4);
                 // draws balloon hello text info
                 A11_LuftfahrtInteraktiv.crc2.fillStyle = "white";
                 A11_LuftfahrtInteraktiv.crc2.strokeStyle = "black";

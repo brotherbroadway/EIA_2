@@ -28,6 +28,7 @@ Quellen: -
     let windBttnDirW: number = 0;
     let windBttnResetW: number = 0;
     let windBttnH: number = 0;
+    export let windPower: number = 1.0;
 
     let backgroundData: ImageData;
     export let allMoveables: Moveable[] = [];
@@ -123,13 +124,26 @@ Quellen: -
         // set current wind direction depending on which button is "pressed" (if mouse pos is within button on canvas)
         if (mouseX > windBttnEastPosX && mouseX < windBttnEastPosX + windBttnDirW && mouseY > windBttnEastPosY && mouseY < windBttnEastPosY + windBttnH) {
             console.log("EAST BUTTON CLICKED", mouseX, mouseY);
+
+            if (currentWindDir != WIND.EAST) {
+                windPower = 1;
+            }
+
             currentWindDir = WIND.EAST;
+            windPower += 0.5;
         } else if (mouseX > windBttnWestPosX && mouseX < windBttnWestPosX + windBttnDirW && mouseY > windBttnEastPosY && mouseY < windBttnEastPosY + windBttnH) {
             console.log("WEST BUTTON CLICKED", mouseX, mouseY);
+
+            if (currentWindDir != WIND.WEST) {
+                windPower = 1;
+            }
+
             currentWindDir = WIND.WEST;
+            windPower += 0.5;
         } else if (mouseX > windBttnEastPosX && mouseX < windBttnEastPosX + windBttnResetW && mouseY > windBttnResetPosY && mouseY < windBttnResetPosY + windBttnH) {
             console.log("RESET BUTTON CLICKED", mouseX, mouseY);
             currentWindDir = WIND.NONE;
+            windPower = 1;
         } else {
             allMoveables.forEach(function(e) {
                 switch(e.constructor) {
@@ -374,7 +388,7 @@ Quellen: -
                 crc2.fillStyle = fillColor;
                 crc2.font = "bold italic " + (fontSize * 0.8) + "px Arial";
                 crc2.textAlign = "center";
-                crc2.fillText("Current Wind", _width * 0.5, _height * -1.4);
+                crc2.fillText("Current Wind: " + Math.floor(windPower * 100) / 100 + "x", _width * 0.5, _height * -1.4);
 
                 // draws balloon hello text info
                 crc2.fillStyle = "white";
