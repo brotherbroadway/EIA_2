@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abschlussarbeit</title>
+    <script src="displayIcecream.js" defer>displayIcecream.ts</script>
+    <script src="generatedContent.js" defer>generatedContent.ts</script>
+    <script src="script.js" defer>script.ts</script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="canvascontainer">
+        <canvas width="800" height="600">
+
+        </canvas>
+    </div>
+    
+    <div class="selectioncontainer">
+        <div class="servecontainer">
+            <h3>Serve Icecreams</h3>
+            <button id="serveeditbutton">EDIT</button>
+            <button id="servedeletebutton">X</button>
+            <div class="dropdowndiv" id="dropdowndivserve">
+                <form id="serveform" method="get">
+                    <select class="dropdownselect" id="dropdownserve" name="servecream">
+                        <option value="" disabled selected hidden>Select an Icecream</option>
+                    </select>
+                    <input type="checkbox" class="checkclass" id="wafflecheck" name="wafflecheck" value="editing">
+                    <label for="wafflecheck" id="wafflelabel">Waffle</label>
+                </form>
+                <p id="pricepreview"></p>
+                <p id="priceprodpreview"></p>
+                <button class="submitbutton" id="servebutton" type="button" form="serveform">Preview Serve</button>
+            </div>
+        </div>
+
+        <div class="creatorcontainer">
+            <h3>Create Icecreams</h3>
+            <button id="createnewbutton">Create New</button>
+            <div id="creatordiv">
+                <form id="creatorform" method="get">
+                    <input type="text" id="creamtitle" name="title" placeholder="Name">
+                    
+                    <div id="creamdiv">
+                        <select class="dropdownselect" id="dropdowncream0" name="toppings">
+                            <option value="" disabled selected hidden>Select a Topping</option>
+                            <option value="Chocolate">Chocolate</option>
+                            <option value="Vanilla">Vanilla</option>
+                            <option value="Strawberry">Strawberry</option>
+                            <option value="Blueberry">Blueberry</option>
+                            <option value="Banana">Banana</option>
+                            <option value="Smurf">Smurf</option>
+                        </select>
+                        <select class="dropdownselect" id="dropdowncream1" name="toppings">
+                            <option value="" disabled selected hidden>Select a Topping</option>
+                            <option value="Chocolate">Chocolate</option>
+                            <option value="Vanilla">Vanilla</option>
+                            <option value="Strawberry">Strawberry</option>
+                            <option value="Blueberry">Blueberry</option>
+                            <option value="Banana">Banana</option>
+                            <option value="Smurf">Smurf</option>
+                        </select>
+                        <select class="dropdownselect" id="dropdowncream2" name="toppings">
+                            <option value="" disabled selected hidden>Select a Topping</option>
+                            <option value="Chocolate">Chocolate</option>
+                            <option value="Vanilla">Vanilla</option>
+                            <option value="Strawberry">Strawberry</option>
+                            <option value="Blueberry">Blueberry</option>
+                            <option value="Banana">Banana</option>
+                            <option value="Smurf">Smurf</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <button id="addcreambutton" type="button">+</button>
+                        <button id="removecreambutton" type="button">-</button>
+                    </div>
+                    
+                    <div>
+                        <select class="dropdownselect" id="dropdownsauce" name="sauce">
+                            <option value="" disabled selected hidden>Select a Sauce</option>
+                            <option value="None">None</option>
+                            <option value="Chocolate">Chocolate</option>
+                            <option value="Vanilla">Vanilla</option>
+                            <option value="Strawberry">Strawberry</option>
+                            <option value="Blueberry">Blueberry</option>
+                            <option value="Banana">Banana</option>
+                            <option value="Smurf">Smurf</option>
+                        </select>
+                        <select class="dropdownselect" id="dropdownsprinkles" name="sprinklesType">
+                            <option value="" disabled selected hidden>Select Sprinkles</option>
+                            <option value="None">None</option>
+                            <option value="Chocolate">Chocolate</option>
+                            <option value="Rainbow">Mint</option>
+                        </select>
+                    </div>
+                    
+                    <input type="checkbox" class="checkclass" id="whippedcheck" name="whippedCream" value="whippedCream">
+                    <label for="whippedcheck" id="whippedlabel">Whipped Cream</label>
+                    <p id="creatorpricepara">$ <input type="number" id="creatorprice" name="price" placeholder="Price"></p>
+                </form>
+                <p id="creatorpriceprod"></p>
+                <button class="submitbutton" id="creatorsubmitbutton" type="button" form="creatorform">Add Icecream</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
