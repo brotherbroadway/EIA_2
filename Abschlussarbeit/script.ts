@@ -37,22 +37,35 @@ Quellen: -
     crc2.canvas.width = window.innerWidth * 0.8;
     export let canvasH: number = crc2.canvas.height;
     export let canvasW: number = crc2.canvas.width;
-    let windowW: number = window.innerWidth;
-    let newWindowW: number = window.innerWidth;
-    let resizeW: number = 250;
+    export let windowW: number = window.innerWidth;
+    export let spawnX: number = -(canvasW * 0.12);
     let golden: number = 0.62;
-    let horizon: number = canvasH * golden;
+    export let horizon: number = canvasH * golden;
     let backgroundData: ImageData;
     let animationInterval: any;
 
     export let bowlColor: string = "rgb(246, 255, 179)";
     export let waffleColor: string = "rgb(202, 165, 83)";
-    export let outlineColor: string = "rgba(255, 255, 255, 0.5)";
     export let whippedColor: string = "rgb(255, 248, 229)";
+    export let outlineColor: string = "rgba(255, 255, 255, 0.5)";
+    export let speechBubbleColor: string = "rgb(204, 247, 255)";
+    export let outlineCustomerColor: string = "black";
+    export let outlineSelectedColor: string = "red";
+
+    let myRatingCurrent: number = 0;
+    let myRatingTotal: number = 50;
+    let myRatingCount: number = 10;
+    let myMoneyCurrent: number = 100;
+    let moneyDisplayCount: number = 0;
+    let myMoneyReduction: number = 10;
+    let myMoneyGain: number = 5;
 
     export let previewServeIcecream: DisplayIcecream;
     export let creatingIcecream: DisplayIcecream;
     export let previewVisible: boolean = false;
+
+    export let allCustomers: Customer[] = [];
+    let customerCount: number;
 
     export let createFormOpen: boolean = false;
     export let editingForm: boolean = false;
@@ -64,16 +77,25 @@ Quellen: -
     export let myUrl: string = "https://webuser.hs-furtwangen.de/~ruderjon/Database/?";
     export let savedCreams: FullIcecream[] = [];
     export let savedCreamsAmount: number = 0;
-    let myMoney: number = 0;
     export let currentSelectedPrice: number = 0;
     export let currentSelectedProdCost: number = 0;
 
-    let waitingPosTaken: boolean[] = [false, false, false, false, false, false];
-    let seatTaken: boolean[] = [false, false, false, false, false, false];
+    export let waitingPosTaken: number[] = [-1, -1, -1, -1];
+    export let waitingPosCount: number = waitingPosTaken.length;
+    export let seatTaken: boolean[] = [false, false, false, false, false, false];
+    export let seatCount: number = seatTaken.length;
+    export let waitingPosX: number[] = [canvasW * 0.275, canvasW * 0.475, canvasW * 0.675, canvasW * 0.87];
+    export let waitingPosY: number = canvasH * 0.9;
+    let waitingPosSize: number = (canvasW * 0.065) * 2;
+    export let waitingSelectedID: number = -2;
+    export let waitOutsidePosX: number = -(canvasW * 0.005);
+    export let seatPosX: number[] = [canvasW * 0.1375, canvasW * 0.3375, canvasW * 0.4175, canvasW * 0.6175, canvasW * 0.7075, canvasW * 0.9075];
+    export let seatPosY: number = canvasH * 0.545;
 
-    enum CustomerStatus {
+    export enum CustomerStatus {
         Arriving,
         WaitingOutside,
+        GoingToQueue,
         AskingForIcecream,
         WaitingInside,
         GoingToSeat,
@@ -82,23 +104,32 @@ Quellen: -
         Reviewing,
     }
 
+    export enum CustomerMood {
+        Bad,
+        Okay,
+        Good
+    }
+
     window.addEventListener("load", handleLoad);
 
     async function handleLoad(): Promise<void> {
-        drawEverything();
-
         await installListeners();
+
+        drawEverything();
     }
 
     // handles drawn visuals
     function drawEverything(): void {
+        // reset animation interval if one exists
         if (animationInterval != null) {
             clearInterval(animationInterval);
             console.log("Interval cleared.");
         }
 
+        // background
         drawBackground();
 
+        // sun
         drawSun(canvasW * 0.05, canvasH * 0.15);
 
         // clouds
@@ -107,9 +138,16 @@ Quellen: -
             drawCloud(canvasW * Math.random(), canvasH * Math.random() * 0.25, getRandomNumber(200, 75), getRandomNumber(75, 35));
         }
 
+        // shop
         drawShop(canvasW * 0.125, horizon);
 
+        // save background data
         backgroundData = crc2.getImageData(0, 0, canvas.width, canvas.height);
+
+        canvas.removeEventListener("click", clickCanvas);
+        canvas.addEventListener("click", clickCanvas);
+
+        //spawnNewCustomer();
 
         // THE ANIMATION
         animationInterval = setInterval(drawAnimated, 100);
@@ -119,13 +157,109 @@ Quellen: -
     function drawAnimated(): void {
         crc2.putImageData(backgroundData, 0, 0);
 
+        // draws customers
+        drawCustomers();
+
+        // draws counter and wall (in front of customers)
+        drawCounter();
+
+        drawWall();
+
+        // draw speech bubbles (if any are here)
+        for (let i: number = 0; i < waitingPosCount; i++) {
+            if (waitingPosTaken[i] >= 0 && allCustomers[waitingPosTaken[i]].status == CustomerStatus.AskingForIcecream) {
+                allCustomers[waitingPosTaken[i]].drawSpeechbubble();
+            }
+        }
+
+        // draws preview icecream
         if (previewVisible) {
-            //console.log("Drawing preview...");
             previewServeIcecream.draw();
         }
 
+        // draws creator icecream
         if (createFormOpen) {
             creatingIcecream.draw();
+        }
+    }
+
+    // draws customers
+    function drawCustomers(): void {
+        customerCount = 0;
+
+        allCustomers.forEach(function(e) {
+            e.draw();
+            customerCount++;
+        })
+        if (Math.random() < 0.1 && customerCount < 10) {
+            console.log("Spawned new customer");
+            spawnNewCustomer();
+        }
+    }
+
+    // spawns new customer
+    function spawnNewCustomer(): void {
+        // get random spawn height, speed, icecream, waffle
+        let randomH: number = getRandomNumber(canvasH * 0.875, horizon + canvasH * 0.05);
+        let randomSpeed: number = getRandomNumber(canvasW * 0.015, canvasW * 0.01);
+        let randomIceNum: number = Math.floor(Math.random() * savedCreams.length);
+        let randomWaffle: number = getRandomNumber(2);
+        let randomIcecream: DisplayIcecream = getDisplayIcecream(0, 0, false, randomIceNum, randomWaffle);
+
+        let newCustomer = new Customer(spawnX, randomH, randomSpeed, randomSpeed * 0.5, allCustomers.length, randomIcecream);
+        allCustomers.push(newCustomer);
+    }
+
+    // click canvas event
+    function clickCanvas(_event: MouseEvent): void {
+        let rect = canvas.getBoundingClientRect();
+        let mouseX: number = _event.clientX - rect.x;
+        let mouseY: number = _event.clientY - rect.y;
+
+        //console.log("CLICKED CANVAS", mouseX, mouseY);
+
+        // select customer at waiting pos
+        if (mouseY < waitingPosY && mouseY > (waitingPosY - waitingPosSize)) {
+
+            //console.log("X:", Math.floor(waitingPosX[0]), Math.floor(waitingPosX[0] + waitingPosSize), "Y:", Math.floor(waitingPosY), Math.floor(waitingPosY - waitingPosSize));
+
+            if (mouseX > waitingPosX[0] && mouseX < (waitingPosX[0] + waitingPosSize)) {
+                selectCustomer(0);
+            } else if (mouseX > waitingPosX[1] && mouseX < (waitingPosX[1] + waitingPosSize)) {
+                selectCustomer(1);
+            } else if (mouseX > waitingPosX[2] && mouseX < (waitingPosX[2] + waitingPosSize)) {
+                selectCustomer(2);
+            } else if (mouseX > waitingPosX[3] && mouseX < (waitingPosX[3] + waitingPosSize)) {
+                selectCustomer(3);
+            }
+        } else if (waitingSelectedID >= 0) { // unselect customer if clicked anywhere else
+            console.log("Unselected Customer (by clicking anywhere)");
+            allCustomers[waitingSelectedID].selected = false
+
+            waitingSelectedID = -2;
+        }
+    }
+
+    // selects customer at the spot (if there's one there)
+    function selectCustomer(_waitPos: number): void {
+        console.log("CLICKED WAITING POS " + (_waitPos + 1));
+
+        // get wait pos selected if it's occupied & correct status
+        if (waitingPosTaken[_waitPos] >= 0 && waitingPosTaken[_waitPos] != waitingSelectedID
+            && allCustomers[waitingPosTaken[_waitPos]].status == CustomerStatus.AskingForIcecream) {
+                if (waitingSelectedID >= 0 && allCustomers[waitingSelectedID].selected === true) {
+                    allCustomers[waitingSelectedID].selected = false;
+                }
+
+                waitingSelectedID = waitingPosTaken[_waitPos];
+
+                console.log("Selected", waitingSelectedID);
+                allCustomers[waitingSelectedID].selected = true;
+        } else if (waitingPosTaken[_waitPos] == waitingSelectedID && allCustomers[waitingPosTaken[_waitPos]].status == CustomerStatus.AskingForIcecream) { // unselect wait pos customer
+            console.log("Unselected Customer (by direct click)");
+            allCustomers[waitingSelectedID].selected = false;
+            
+            waitingSelectedID = -2;
         }
     }
     
@@ -231,22 +365,21 @@ Quellen: -
         drawTable(chairLX1 + tableX, chairY);
         drawTable(chairLX2 + tableX, chairY);
         drawTable(chairLX3 + tableX, chairY);
+    }
 
-        // draw wall
+    // draws wall
+    function drawWall(): void {
         crc2.beginPath();
-        crc2.rect(_posX - canvasW * 0.0075, 0, canvasW * 0.0075, canvasH);
+        crc2.rect(canvasW * 0.125 - canvasW * 0.0075, 0, canvasW * 0.0075, canvasH);
         crc2.fillStyle = "rgb(121, 153, 164)";
         crc2.fill();
         crc2.closePath();
-
-        drawCounter(_posX, _posY);
     }
 
     // draws counter
-    function drawCounter(_posX: number, _posY: number): void {
-        // draw counter
+    function drawCounter(): void {
         crc2.beginPath();
-        crc2.rect(_posX, canvasH * 0.875, canvasW, canvasH);
+        crc2.rect(canvasW * 0.125, canvasH * 0.875, canvasW, canvasH);
         crc2.fillStyle = "rgb(183, 211, 225)";
         crc2.fill();
         crc2.closePath();
@@ -349,18 +482,24 @@ Quellen: -
     }
 
     // gets random random, optional minimum
-    function getRandomNumber(_max: number, _min: number = 0): number {
-        let num: number = Math.floor(Math.random() * _max);
-        if (num < _min) {
-            num += _min;
-            if (num > _max) {
-                num = _max;
-            }
-        }
+    export function getRandomNumber(_max: number, _min: number = 0): number {
+        let difference: number = _max - _min;
+
+        let num: number = Math.random();
+
+        num = Math.floor(num * difference);
+
+        num += _min;
+
         return num;
     }
 
-    // gets an icecream topping color
+    // get random true or false
+    export function getRandomBool(): boolean {
+        return Boolean(Math.round(Math.random()));
+    }
+
+    // gets an icecream topping (or sauce) color rgb code
     export function getIcecreamColor(_topping: CreamTypes, _sauce: boolean = false): string {
         let colorR: number = 0;
         let colorG: number = 0;
@@ -368,7 +507,7 @@ Quellen: -
         let sauceBonus: number = 0;
         let color: string = "";
 
-        // sauce is a bit brighter
+        // sauce is a bit darker
         if (_sauce) {
             sauceBonus = -30;
         }
@@ -396,9 +535,9 @@ Quellen: -
                 colorB = 2099;
                 break;
             case CreamTypes.Banana:
-                colorR = 217;
-                colorG = 192;
-                colorB = 69;
+                colorR = 219;
+                colorG = 187;
+                colorB = 31;
                 break;
             case CreamTypes.Smurf:
                 colorR = 30;
@@ -415,6 +554,7 @@ Quellen: -
         return color;
     }
 
+    // gets sprinkles color rgb code
     export function getSprinklesColor(_sprinkles: SprinklesType): string {
         let color: string = "";
 
@@ -427,6 +567,50 @@ Quellen: -
             case SprinklesType.Mint:
                 color = "rgb(169, 236, 24)";
                 break;
+        }
+
+        return color;
+    }
+
+    // gets customer mood color rgb code
+    export function getMoodColor(_mood: CustomerMood): string {
+        let color: string = "";
+
+        switch (_mood) {
+            case CustomerMood.Bad:
+                color = "rgb(205, 10, 10)"; // red
+                break;
+            case CustomerMood.Okay:
+                color = "rgb(219, 219, 0)"; // yellow
+                break;
+            case CustomerMood.Good:
+                color = "rgb(52, 223, 52)"; // green
+                break;
+            default:
+                // Error color
+                color = "rgb(200, 200, 200)"; // grey
+                break;
+        }
+
+        return color;
+    }
+
+    // gets rating color rgb code
+    export function getRatingColor(_rating: number): string {
+        let color: string = "rgb(0, 118, 245)"; // rating more than 9 (default) - darkblue
+
+        if (_rating < 2) {
+            color= "rgb(128, 0, 0)"; // rating less than 2 - darkred
+        } else if (_rating < 4) {
+            color = "rgb(204, 0, 0)"; // rating less than 4 - red
+        } else if (_rating < 6) {
+            color = "rgb(255, 102, 0)"; // rating less than 6 - orange
+        } else if (_rating < 7) {
+            color = "rgb(255, 234, 0)"; // rating less than 7 - yellow
+        } else if (_rating < 8) {
+            color = "rgb(16, 245, 0)"; // rating less than 8 - green
+        } else if (_rating < 9) {
+            color = "rgb(0, 245, 204)"; // rating less than 9 - lightblue
         }
 
         return color;

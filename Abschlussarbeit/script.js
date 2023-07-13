@@ -45,18 +45,29 @@ Quellen: -
     EIA2SoSe23_Abschlussarbeit.crc2.canvas.width = window.innerWidth * 0.8;
     EIA2SoSe23_Abschlussarbeit.canvasH = EIA2SoSe23_Abschlussarbeit.crc2.canvas.height;
     EIA2SoSe23_Abschlussarbeit.canvasW = EIA2SoSe23_Abschlussarbeit.crc2.canvas.width;
-    let windowW = window.innerWidth;
-    let newWindowW = window.innerWidth;
-    let resizeW = 250;
+    EIA2SoSe23_Abschlussarbeit.windowW = window.innerWidth;
+    EIA2SoSe23_Abschlussarbeit.spawnX = -(EIA2SoSe23_Abschlussarbeit.canvasW * 0.12);
     let golden = 0.62;
-    let horizon = EIA2SoSe23_Abschlussarbeit.canvasH * golden;
+    EIA2SoSe23_Abschlussarbeit.horizon = EIA2SoSe23_Abschlussarbeit.canvasH * golden;
     let backgroundData;
     let animationInterval;
     EIA2SoSe23_Abschlussarbeit.bowlColor = "rgb(246, 255, 179)";
     EIA2SoSe23_Abschlussarbeit.waffleColor = "rgb(202, 165, 83)";
-    EIA2SoSe23_Abschlussarbeit.outlineColor = "rgba(255, 255, 255, 0.5)";
     EIA2SoSe23_Abschlussarbeit.whippedColor = "rgb(255, 248, 229)";
+    EIA2SoSe23_Abschlussarbeit.outlineColor = "rgba(255, 255, 255, 0.5)";
+    EIA2SoSe23_Abschlussarbeit.speechBubbleColor = "rgb(204, 247, 255)";
+    EIA2SoSe23_Abschlussarbeit.outlineCustomerColor = "black";
+    EIA2SoSe23_Abschlussarbeit.outlineSelectedColor = "red";
+    let myRatingCurrent = 0;
+    let myRatingTotal = 50;
+    let myRatingCount = 10;
+    let myMoneyCurrent = 100;
+    let moneyDisplayCount = 0;
+    let myMoneyReduction = 10;
+    let myMoneyGain = 5;
     EIA2SoSe23_Abschlussarbeit.previewVisible = false;
+    EIA2SoSe23_Abschlussarbeit.allCustomers = [];
+    let customerCount;
     EIA2SoSe23_Abschlussarbeit.createFormOpen = false;
     EIA2SoSe23_Abschlussarbeit.editingForm = false;
     EIA2SoSe23_Abschlussarbeit.formEmpty = true;
@@ -65,56 +76,161 @@ Quellen: -
     EIA2SoSe23_Abschlussarbeit.myUrl = "https://webuser.hs-furtwangen.de/~ruderjon/Database/?";
     EIA2SoSe23_Abschlussarbeit.savedCreams = [];
     EIA2SoSe23_Abschlussarbeit.savedCreamsAmount = 0;
-    let myMoney = 0;
     EIA2SoSe23_Abschlussarbeit.currentSelectedPrice = 0;
     EIA2SoSe23_Abschlussarbeit.currentSelectedProdCost = 0;
-    let waitingPosTaken = [false, false, false, false, false, false];
-    let seatTaken = [false, false, false, false, false, false];
+    EIA2SoSe23_Abschlussarbeit.waitingPosTaken = [-1, -1, -1, -1];
+    EIA2SoSe23_Abschlussarbeit.waitingPosCount = EIA2SoSe23_Abschlussarbeit.waitingPosTaken.length;
+    EIA2SoSe23_Abschlussarbeit.seatTaken = [false, false, false, false, false, false];
+    EIA2SoSe23_Abschlussarbeit.seatCount = EIA2SoSe23_Abschlussarbeit.seatTaken.length;
+    EIA2SoSe23_Abschlussarbeit.waitingPosX = [EIA2SoSe23_Abschlussarbeit.canvasW * 0.275, EIA2SoSe23_Abschlussarbeit.canvasW * 0.475, EIA2SoSe23_Abschlussarbeit.canvasW * 0.675, EIA2SoSe23_Abschlussarbeit.canvasW * 0.87];
+    EIA2SoSe23_Abschlussarbeit.waitingPosY = EIA2SoSe23_Abschlussarbeit.canvasH * 0.9;
+    let waitingPosSize = (EIA2SoSe23_Abschlussarbeit.canvasW * 0.065) * 2;
+    EIA2SoSe23_Abschlussarbeit.waitingSelectedID = -2;
+    EIA2SoSe23_Abschlussarbeit.waitOutsidePosX = -(EIA2SoSe23_Abschlussarbeit.canvasW * 0.005);
+    EIA2SoSe23_Abschlussarbeit.seatPosX = [EIA2SoSe23_Abschlussarbeit.canvasW * 0.1375, EIA2SoSe23_Abschlussarbeit.canvasW * 0.3375, EIA2SoSe23_Abschlussarbeit.canvasW * 0.4175, EIA2SoSe23_Abschlussarbeit.canvasW * 0.6175, EIA2SoSe23_Abschlussarbeit.canvasW * 0.7075, EIA2SoSe23_Abschlussarbeit.canvasW * 0.9075];
+    EIA2SoSe23_Abschlussarbeit.seatPosY = EIA2SoSe23_Abschlussarbeit.canvasH * 0.545;
     let CustomerStatus;
     (function (CustomerStatus) {
         CustomerStatus[CustomerStatus["Arriving"] = 0] = "Arriving";
         CustomerStatus[CustomerStatus["WaitingOutside"] = 1] = "WaitingOutside";
-        CustomerStatus[CustomerStatus["AskingForIcecream"] = 2] = "AskingForIcecream";
-        CustomerStatus[CustomerStatus["WaitingInside"] = 3] = "WaitingInside";
-        CustomerStatus[CustomerStatus["GoingToSeat"] = 4] = "GoingToSeat";
-        CustomerStatus[CustomerStatus["Eating"] = 5] = "Eating";
-        CustomerStatus[CustomerStatus["Leaving"] = 6] = "Leaving";
-        CustomerStatus[CustomerStatus["Reviewing"] = 7] = "Reviewing";
-    })(CustomerStatus || (CustomerStatus = {}));
+        CustomerStatus[CustomerStatus["GoingToQueue"] = 2] = "GoingToQueue";
+        CustomerStatus[CustomerStatus["AskingForIcecream"] = 3] = "AskingForIcecream";
+        CustomerStatus[CustomerStatus["WaitingInside"] = 4] = "WaitingInside";
+        CustomerStatus[CustomerStatus["GoingToSeat"] = 5] = "GoingToSeat";
+        CustomerStatus[CustomerStatus["Eating"] = 6] = "Eating";
+        CustomerStatus[CustomerStatus["Leaving"] = 7] = "Leaving";
+        CustomerStatus[CustomerStatus["Reviewing"] = 8] = "Reviewing";
+    })(CustomerStatus = EIA2SoSe23_Abschlussarbeit.CustomerStatus || (EIA2SoSe23_Abschlussarbeit.CustomerStatus = {}));
+    let CustomerMood;
+    (function (CustomerMood) {
+        CustomerMood[CustomerMood["Bad"] = 0] = "Bad";
+        CustomerMood[CustomerMood["Okay"] = 1] = "Okay";
+        CustomerMood[CustomerMood["Good"] = 2] = "Good";
+    })(CustomerMood = EIA2SoSe23_Abschlussarbeit.CustomerMood || (EIA2SoSe23_Abschlussarbeit.CustomerMood = {}));
     window.addEventListener("load", handleLoad);
     function handleLoad() {
         return __awaiter(this, void 0, void 0, function* () {
-            drawEverything();
             yield EIA2SoSe23_Abschlussarbeit.installListeners();
+            drawEverything();
         });
     }
     // handles drawn visuals
     function drawEverything() {
+        // reset animation interval if one exists
         if (animationInterval != null) {
             clearInterval(animationInterval);
             console.log("Interval cleared.");
         }
+        // background
         drawBackground();
+        // sun
         drawSun(EIA2SoSe23_Abschlussarbeit.canvasW * 0.05, EIA2SoSe23_Abschlussarbeit.canvasH * 0.15);
         // clouds
         let cloudAmount = getRandomNumber(EIA2SoSe23_Abschlussarbeit.canvasW * 0.0125, EIA2SoSe23_Abschlussarbeit.canvasW * 0.005);
         for (let i = 0; i < cloudAmount; i++) {
             drawCloud(EIA2SoSe23_Abschlussarbeit.canvasW * Math.random(), EIA2SoSe23_Abschlussarbeit.canvasH * Math.random() * 0.25, getRandomNumber(200, 75), getRandomNumber(75, 35));
         }
-        drawShop(EIA2SoSe23_Abschlussarbeit.canvasW * 0.125, horizon);
+        // shop
+        drawShop(EIA2SoSe23_Abschlussarbeit.canvasW * 0.125, EIA2SoSe23_Abschlussarbeit.horizon);
+        // save background data
         backgroundData = EIA2SoSe23_Abschlussarbeit.crc2.getImageData(0, 0, canvas.width, canvas.height);
+        canvas.removeEventListener("click", clickCanvas);
+        canvas.addEventListener("click", clickCanvas);
+        //spawnNewCustomer();
         // THE ANIMATION
         animationInterval = setInterval(drawAnimated, 100);
     }
     // draws animated and foreground stuff
     function drawAnimated() {
         EIA2SoSe23_Abschlussarbeit.crc2.putImageData(backgroundData, 0, 0);
+        // draws customers
+        drawCustomers();
+        // draws counter and wall (in front of customers)
+        drawCounter();
+        drawWall();
+        // draw speech bubbles (if any are here)
+        for (let i = 0; i < EIA2SoSe23_Abschlussarbeit.waitingPosCount; i++) {
+            if (EIA2SoSe23_Abschlussarbeit.waitingPosTaken[i] >= 0 && EIA2SoSe23_Abschlussarbeit.allCustomers[EIA2SoSe23_Abschlussarbeit.waitingPosTaken[i]].status == CustomerStatus.AskingForIcecream) {
+                EIA2SoSe23_Abschlussarbeit.allCustomers[EIA2SoSe23_Abschlussarbeit.waitingPosTaken[i]].drawSpeechbubble();
+            }
+        }
+        // draws preview icecream
         if (EIA2SoSe23_Abschlussarbeit.previewVisible) {
-            //console.log("Drawing preview...");
             EIA2SoSe23_Abschlussarbeit.previewServeIcecream.draw();
         }
+        // draws creator icecream
         if (EIA2SoSe23_Abschlussarbeit.createFormOpen) {
             EIA2SoSe23_Abschlussarbeit.creatingIcecream.draw();
+        }
+    }
+    // draws customers
+    function drawCustomers() {
+        customerCount = 0;
+        EIA2SoSe23_Abschlussarbeit.allCustomers.forEach(function (e) {
+            e.draw();
+            customerCount++;
+        });
+        if (Math.random() < 0.1 && customerCount < 10) {
+            console.log("Spawned new customer");
+            spawnNewCustomer();
+        }
+    }
+    // spawns new customer
+    function spawnNewCustomer() {
+        // get random spawn height, speed, icecream, waffle
+        let randomH = getRandomNumber(EIA2SoSe23_Abschlussarbeit.canvasH * 0.875, EIA2SoSe23_Abschlussarbeit.horizon + EIA2SoSe23_Abschlussarbeit.canvasH * 0.05);
+        let randomSpeed = getRandomNumber(EIA2SoSe23_Abschlussarbeit.canvasW * 0.015, EIA2SoSe23_Abschlussarbeit.canvasW * 0.01);
+        let randomIceNum = Math.floor(Math.random() * EIA2SoSe23_Abschlussarbeit.savedCreams.length);
+        let randomWaffle = getRandomNumber(2);
+        let randomIcecream = EIA2SoSe23_Abschlussarbeit.getDisplayIcecream(0, 0, false, randomIceNum, randomWaffle);
+        let newCustomer = new EIA2SoSe23_Abschlussarbeit.Customer(EIA2SoSe23_Abschlussarbeit.spawnX, randomH, randomSpeed, randomSpeed * 0.5, EIA2SoSe23_Abschlussarbeit.allCustomers.length, randomIcecream);
+        EIA2SoSe23_Abschlussarbeit.allCustomers.push(newCustomer);
+    }
+    // click canvas event
+    function clickCanvas(_event) {
+        let rect = canvas.getBoundingClientRect();
+        let mouseX = _event.clientX - rect.x;
+        let mouseY = _event.clientY - rect.y;
+        //console.log("CLICKED CANVAS", mouseX, mouseY);
+        // select customer at waiting pos
+        if (mouseY < EIA2SoSe23_Abschlussarbeit.waitingPosY && mouseY > (EIA2SoSe23_Abschlussarbeit.waitingPosY - waitingPosSize)) {
+            //console.log("X:", Math.floor(waitingPosX[0]), Math.floor(waitingPosX[0] + waitingPosSize), "Y:", Math.floor(waitingPosY), Math.floor(waitingPosY - waitingPosSize));
+            if (mouseX > EIA2SoSe23_Abschlussarbeit.waitingPosX[0] && mouseX < (EIA2SoSe23_Abschlussarbeit.waitingPosX[0] + waitingPosSize)) {
+                selectCustomer(0);
+            }
+            else if (mouseX > EIA2SoSe23_Abschlussarbeit.waitingPosX[1] && mouseX < (EIA2SoSe23_Abschlussarbeit.waitingPosX[1] + waitingPosSize)) {
+                selectCustomer(1);
+            }
+            else if (mouseX > EIA2SoSe23_Abschlussarbeit.waitingPosX[2] && mouseX < (EIA2SoSe23_Abschlussarbeit.waitingPosX[2] + waitingPosSize)) {
+                selectCustomer(2);
+            }
+            else if (mouseX > EIA2SoSe23_Abschlussarbeit.waitingPosX[3] && mouseX < (EIA2SoSe23_Abschlussarbeit.waitingPosX[3] + waitingPosSize)) {
+                selectCustomer(3);
+            }
+        }
+        else if (EIA2SoSe23_Abschlussarbeit.waitingSelectedID >= 0) { // unselect customer if clicked anywhere else
+            console.log("Unselected Customer (by clicking anywhere)");
+            EIA2SoSe23_Abschlussarbeit.allCustomers[EIA2SoSe23_Abschlussarbeit.waitingSelectedID].selected = false;
+            EIA2SoSe23_Abschlussarbeit.waitingSelectedID = -2;
+        }
+    }
+    // selects customer at the spot (if there's one there)
+    function selectCustomer(_waitPos) {
+        console.log("CLICKED WAITING POS " + (_waitPos + 1));
+        // get wait pos selected if it's occupied & correct status
+        if (EIA2SoSe23_Abschlussarbeit.waitingPosTaken[_waitPos] >= 0 && EIA2SoSe23_Abschlussarbeit.waitingPosTaken[_waitPos] != EIA2SoSe23_Abschlussarbeit.waitingSelectedID
+            && EIA2SoSe23_Abschlussarbeit.allCustomers[EIA2SoSe23_Abschlussarbeit.waitingPosTaken[_waitPos]].status == CustomerStatus.AskingForIcecream) {
+            if (EIA2SoSe23_Abschlussarbeit.waitingSelectedID >= 0 && EIA2SoSe23_Abschlussarbeit.allCustomers[EIA2SoSe23_Abschlussarbeit.waitingSelectedID].selected === true) {
+                EIA2SoSe23_Abschlussarbeit.allCustomers[EIA2SoSe23_Abschlussarbeit.waitingSelectedID].selected = false;
+            }
+            EIA2SoSe23_Abschlussarbeit.waitingSelectedID = EIA2SoSe23_Abschlussarbeit.waitingPosTaken[_waitPos];
+            console.log("Selected", EIA2SoSe23_Abschlussarbeit.waitingSelectedID);
+            EIA2SoSe23_Abschlussarbeit.allCustomers[EIA2SoSe23_Abschlussarbeit.waitingSelectedID].selected = true;
+        }
+        else if (EIA2SoSe23_Abschlussarbeit.waitingPosTaken[_waitPos] == EIA2SoSe23_Abschlussarbeit.waitingSelectedID && EIA2SoSe23_Abschlussarbeit.allCustomers[EIA2SoSe23_Abschlussarbeit.waitingPosTaken[_waitPos]].status == CustomerStatus.AskingForIcecream) { // unselect wait pos customer
+            console.log("Unselected Customer (by direct click)");
+            EIA2SoSe23_Abschlussarbeit.allCustomers[EIA2SoSe23_Abschlussarbeit.waitingSelectedID].selected = false;
+            EIA2SoSe23_Abschlussarbeit.waitingSelectedID = -2;
         }
     }
     // draw background with golden ratio
@@ -201,19 +317,19 @@ Quellen: -
         drawTable(chairLX1 + tableX, chairY);
         drawTable(chairLX2 + tableX, chairY);
         drawTable(chairLX3 + tableX, chairY);
-        // draw wall
+    }
+    // draws wall
+    function drawWall() {
         EIA2SoSe23_Abschlussarbeit.crc2.beginPath();
-        EIA2SoSe23_Abschlussarbeit.crc2.rect(_posX - EIA2SoSe23_Abschlussarbeit.canvasW * 0.0075, 0, EIA2SoSe23_Abschlussarbeit.canvasW * 0.0075, EIA2SoSe23_Abschlussarbeit.canvasH);
+        EIA2SoSe23_Abschlussarbeit.crc2.rect(EIA2SoSe23_Abschlussarbeit.canvasW * 0.125 - EIA2SoSe23_Abschlussarbeit.canvasW * 0.0075, 0, EIA2SoSe23_Abschlussarbeit.canvasW * 0.0075, EIA2SoSe23_Abschlussarbeit.canvasH);
         EIA2SoSe23_Abschlussarbeit.crc2.fillStyle = "rgb(121, 153, 164)";
         EIA2SoSe23_Abschlussarbeit.crc2.fill();
         EIA2SoSe23_Abschlussarbeit.crc2.closePath();
-        drawCounter(_posX, _posY);
     }
     // draws counter
-    function drawCounter(_posX, _posY) {
-        // draw counter
+    function drawCounter() {
         EIA2SoSe23_Abschlussarbeit.crc2.beginPath();
-        EIA2SoSe23_Abschlussarbeit.crc2.rect(_posX, EIA2SoSe23_Abschlussarbeit.canvasH * 0.875, EIA2SoSe23_Abschlussarbeit.canvasW, EIA2SoSe23_Abschlussarbeit.canvasH);
+        EIA2SoSe23_Abschlussarbeit.crc2.rect(EIA2SoSe23_Abschlussarbeit.canvasW * 0.125, EIA2SoSe23_Abschlussarbeit.canvasH * 0.875, EIA2SoSe23_Abschlussarbeit.canvasW, EIA2SoSe23_Abschlussarbeit.canvasH);
         EIA2SoSe23_Abschlussarbeit.crc2.fillStyle = "rgb(183, 211, 225)";
         EIA2SoSe23_Abschlussarbeit.crc2.fill();
         EIA2SoSe23_Abschlussarbeit.crc2.closePath();
@@ -299,23 +415,26 @@ Quellen: -
     }
     // gets random random, optional minimum
     function getRandomNumber(_max, _min = 0) {
-        let num = Math.floor(Math.random() * _max);
-        if (num < _min) {
-            num += _min;
-            if (num > _max) {
-                num = _max;
-            }
-        }
+        let difference = _max - _min;
+        let num = Math.random();
+        num = Math.floor(num * difference);
+        num += _min;
         return num;
     }
-    // gets an icecream topping color
+    EIA2SoSe23_Abschlussarbeit.getRandomNumber = getRandomNumber;
+    // get random true or false
+    function getRandomBool() {
+        return Boolean(Math.round(Math.random()));
+    }
+    EIA2SoSe23_Abschlussarbeit.getRandomBool = getRandomBool;
+    // gets an icecream topping (or sauce) color rgb code
     function getIcecreamColor(_topping, _sauce = false) {
         let colorR = 0;
         let colorG = 0;
         let colorB = 0;
         let sauceBonus = 0;
         let color = "";
-        // sauce is a bit brighter
+        // sauce is a bit darker
         if (_sauce) {
             sauceBonus = -30;
         }
@@ -342,9 +461,9 @@ Quellen: -
                 colorB = 2099;
                 break;
             case EIA2SoSe23_Abschlussarbeit.CreamTypes.Banana:
-                colorR = 217;
-                colorG = 192;
-                colorB = 69;
+                colorR = 219;
+                colorG = 187;
+                colorB = 31;
                 break;
             case EIA2SoSe23_Abschlussarbeit.CreamTypes.Smurf:
                 colorR = 30;
@@ -358,6 +477,7 @@ Quellen: -
         return color;
     }
     EIA2SoSe23_Abschlussarbeit.getIcecreamColor = getIcecreamColor;
+    // gets sprinkles color rgb code
     function getSprinklesColor(_sprinkles) {
         let color = "";
         switch (_sprinkles) {
@@ -373,5 +493,50 @@ Quellen: -
         return color;
     }
     EIA2SoSe23_Abschlussarbeit.getSprinklesColor = getSprinklesColor;
+    // gets customer mood color rgb code
+    function getMoodColor(_mood) {
+        let color = "";
+        switch (_mood) {
+            case CustomerMood.Bad:
+                color = "rgb(205, 10, 10)"; // red
+                break;
+            case CustomerMood.Okay:
+                color = "rgb(219, 219, 0)"; // yellow
+                break;
+            case CustomerMood.Good:
+                color = "rgb(52, 223, 52)"; // green
+                break;
+            default:
+                // Error color
+                color = "rgb(200, 200, 200)"; // grey
+                break;
+        }
+        return color;
+    }
+    EIA2SoSe23_Abschlussarbeit.getMoodColor = getMoodColor;
+    // gets rating color rgb code
+    function getRatingColor(_rating) {
+        let color = "rgb(0, 118, 245)"; // rating more than 9 (default) - darkblue
+        if (_rating < 2) {
+            color = "rgb(128, 0, 0)"; // rating less than 2 - darkred
+        }
+        else if (_rating < 4) {
+            color = "rgb(204, 0, 0)"; // rating less than 4 - red
+        }
+        else if (_rating < 6) {
+            color = "rgb(255, 102, 0)"; // rating less than 6 - orange
+        }
+        else if (_rating < 7) {
+            color = "rgb(255, 234, 0)"; // rating less than 7 - yellow
+        }
+        else if (_rating < 8) {
+            color = "rgb(16, 245, 0)"; // rating less than 8 - green
+        }
+        else if (_rating < 9) {
+            color = "rgb(0, 245, 204)"; // rating less than 9 - lightblue
+        }
+        return color;
+    }
+    EIA2SoSe23_Abschlussarbeit.getRatingColor = getRatingColor;
 })(EIA2SoSe23_Abschlussarbeit || (EIA2SoSe23_Abschlussarbeit = {}));
 //# sourceMappingURL=script.js.map
