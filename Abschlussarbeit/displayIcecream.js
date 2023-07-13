@@ -8,10 +8,9 @@ Matrikel: 265274
 Datum: 06.07.2023
 Quellen: -
 */
-    class DisplayIcecream {
+    class DisplayIcecream extends EIA2SoSe23_Abschlussarbeit.Moveable {
         constructor(_posX, _posY, _toppingColors, _sauceColor, _sprinklesColor, _whipped, _waffle, _cost, _id, _scaling = 1) {
-            this.posX = _posX;
-            this.posY = _posY;
+            super(_posX, _posY, _scaling);
             this.toppingColors = _toppingColors;
             this.sauceColor = _sauceColor;
             this.sprinklesColor = _sprinklesColor;
@@ -19,11 +18,13 @@ Quellen: -
             this.waffle = _waffle;
             this.cost = _cost;
             this.id = _id;
-            this.scaling = _scaling;
         }
         draw() {
             // scales icecream depending on screen position
             this.scaling = (this.posY * EIA2SoSe23_Abschlussarbeit.canvasH) * 0.0000014;
+            if (EIA2SoSe23_Abschlussarbeit.canvasW > 1000) {
+                this.scaling = 0.6;
+            }
             // draws whipped cream
             if (this.whipped) {
                 this.drawWhipped();
@@ -213,6 +214,12 @@ Quellen: -
             else {
                 this.toppingColors.pop();
             }
+            if (this.toppingColors.length < 1) {
+                return true;
+            }
+            else {
+                return false;
+            }
         }
         // changes current toppings (for creating)
         changeToppings(_newToppings) {
@@ -233,6 +240,11 @@ Quellen: -
         changeWhipped(_newWhip) {
             //console.log("Changed toppings");
             this.whipped = _newWhip;
+        }
+        // changes position (for customer carrying/eating)
+        changePos(_posX, _posY) {
+            this.posX = _posX;
+            this.posY = _posY;
         }
     }
     EIA2SoSe23_Abschlussarbeit.DisplayIcecream = DisplayIcecream;

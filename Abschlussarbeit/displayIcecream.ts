@@ -6,23 +6,20 @@ Matrikel: 265274
 Datum: 06.07.2023
 Quellen: -
 */
-    export class DisplayIcecream {
-        private posX: number;
-        private posY: number;
+    export class DisplayIcecream extends Moveable {
         private toppingColors: string[];
         private sauceColor: string;
         private sprinklesColor: string;
         private whipped: boolean;
         public waffle: boolean;
         private cost: number;
-        private id: string;
-        private scaling: number;
+        public id: string;
 
         public constructor(_posX: number, _posY: number, _toppingColors: string[],
             _sauceColor: string, _sprinklesColor: string, _whipped: boolean,
             _waffle: boolean, _cost: number, _id: string, _scaling: number = 1) {
-                this.posX = _posX;
-                this.posY = _posY;
+                super(_posX, _posY, _scaling);
+
                 this.toppingColors = _toppingColors;
                 this.sauceColor = _sauceColor;
                 this.sprinklesColor = _sprinklesColor;
@@ -30,12 +27,15 @@ Quellen: -
                 this.waffle = _waffle;
                 this.cost = _cost;
                 this.id = _id;
-                this.scaling = _scaling;
         }
 
         public draw(): void {
             // scales icecream depending on screen position
             this.scaling = (this.posY * canvasH) * 0.0000014;
+
+            if (canvasW > 1000) {
+                this.scaling = 0.6;
+            }
 
             // draws whipped cream
             if (this.whipped) {
@@ -260,11 +260,17 @@ Quellen: -
         }
 
         // removes a topping (by eating it), eats whipped cream first (duh)
-        public eatTopping(): void {
+        public eatTopping(): boolean {
             if (this.whipped) {
                 this.whipped = false;
             } else {
                 this.toppingColors.pop();
+            }
+
+            if (this.toppingColors.length < 1) {
+                return true;
+            } else {
+                return false;
             }
         }
 
@@ -290,6 +296,12 @@ Quellen: -
         public changeWhipped(_newWhip: boolean): void {
             //console.log("Changed toppings");
             this.whipped = _newWhip;
+        }
+
+        // changes position (for customer carrying/eating)
+        public changePos(_posX: number, _posY: number): void {
+            this.posX = _posX;
+            this.posY = _posY;
         }
     }
 }
