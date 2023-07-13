@@ -78,7 +78,7 @@ Quellen: -
         //removeToppingBttn.setAttribute("style", "display: none");
 
         // install event listeners (for serving tab)
-        serveBttn.addEventListener("click", clickPreviewServeButton);
+        serveBttn.addEventListener("click", clickServeButton);
         editServeBttn.addEventListener("click", clickEditServeButton);
         deleteServeBttn.addEventListener("click", clickDeleteServeButton);
         dropdownServe.addEventListener("change", serveSelectionChange);
@@ -233,7 +233,7 @@ Quellen: -
     }
 
     // checks if a new icecream has to be previewed
-    function getDisplayIcecream(_posX: number, _posY: number, _creating: boolean,_displayID: number = -1): DisplayIcecream {
+    export function getDisplayIcecream(_posX: number, _posY: number, _creating: boolean, _displayID: number = -1, _waffling: number = -1): DisplayIcecream {
         let prepIcecream: FullIcecream;
 
         let theseToppings: CreamTypes[];
@@ -248,7 +248,18 @@ Quellen: -
         let hasWhipped: boolean = false;
 
         // get waffle bool
-        let hasWaffle: boolean = waffleCheck.checked;
+        let hasWaffle: boolean = false;
+
+        switch (_waffling) {
+            case -1:
+                hasWaffle = waffleCheck.checked;
+                break;
+            case 0:
+                break;
+            case 1:
+                hasWaffle = true;
+                break;
+        }
 
         let thisPrice: number = 0;
 
@@ -269,6 +280,8 @@ Quellen: -
         } else {
             prepIcecream = JSON.parse(JSON.stringify(savedCreams[_displayID]));
 
+            console.log("prepcream:", prepIcecream.title);
+
             // get toppin colors
             theseToppings = JSON.parse(prepIcecream.toppings);
 
@@ -280,7 +293,7 @@ Quellen: -
             // get sauce color
             havingSauce = JSON.parse("" + prepIcecream.hasSauce);
 
-            console.log("HasSauce", havingSauce);
+            //console.log("HasSauce", havingSauce);
             if (havingSauce === true) {
                 let thisSauce: CreamTypes = JSON.parse("" + prepIcecream.sauce);
                 colorSauce = getIcecreamColor(thisSauce, true);
@@ -302,7 +315,7 @@ Quellen: -
         let thisDisplayIcecream = new DisplayIcecream(_posX, _posY,
             colorToppings, colorSauce, colorSprinkles, hasWhipped, hasWaffle, thisPrice, thisID);
 
-        console.log("DisplayIcecream:", colorToppings, colorSauce, colorSprinkles, hasWhipped, hasWaffle, thisPrice, thisID);  
+        console.log("DisplayIcecream:", prepIcecream.title, colorToppings, colorSauce, colorSprinkles, hasWhipped, hasWaffle, thisPrice, thisID);  
 
         return thisDisplayIcecream;
     }
@@ -342,6 +355,7 @@ Quellen: -
                 console.log("Waffle change")
                 previewServeIcecream.waffle = waffleCheck.checked;
             } else {
+                console.log("Index", creamIndex, "Cream:", savedCreams[creamIndex].title);
                 previewServeIcecream = getDisplayIcecream(canvasW * 0.5, canvasH * 0.95, false, creamIndex);
             }
 
@@ -706,11 +720,16 @@ Quellen: -
     }
 
     // click preview serve button
-    function clickPreviewServeButton(_event: Event): void {
+    function clickServeButton(_event: Event): void {
         console.log("Click Serve Button ID:", dropdownServe.selectedIndex, "Waffle?:", waffleCheck.checked);
 
-        if (dropdownServe.selectedIndex != 0) {
+        if (dropdownServe.selectedIndex != 0 && waitingSelectedID >= 0) {
+            // give it to customer
+            allCustomers[waitingSelectedID].giveIceream(savedCreams[(dropdownServe.selectedIndex - 1)].id);
+
             setSelectedIndex(dropdownServe, 0);
+
+            //waffleCheck.checked = false;
 
             // closes create form
             if (createFormOpen) {
@@ -721,8 +740,10 @@ Quellen: -
 
                 resetCreatorFields();
             }
-        } else {
+        } else if (waitingSelectedID >= 0) {
             alert("Select an Icecream to serve first!");
+        } else {
+            alert("Select a customer to serve first!");
         }
     }
 

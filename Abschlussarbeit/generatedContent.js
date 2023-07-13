@@ -64,7 +64,7 @@ Quellen: -
             EIA2SoSe23_Abschlussarbeit.addToppingBttn.disabled = true;
             //removeToppingBttn.setAttribute("style", "display: none");
             // install event listeners (for serving tab)
-            EIA2SoSe23_Abschlussarbeit.serveBttn.addEventListener("click", clickPreviewServeButton);
+            EIA2SoSe23_Abschlussarbeit.serveBttn.addEventListener("click", clickServeButton);
             EIA2SoSe23_Abschlussarbeit.editServeBttn.addEventListener("click", clickEditServeButton);
             EIA2SoSe23_Abschlussarbeit.deleteServeBttn.addEventListener("click", clickDeleteServeButton);
             EIA2SoSe23_Abschlussarbeit.dropdownServe.addEventListener("change", serveSelectionChange);
@@ -199,7 +199,7 @@ Quellen: -
         setSelectedIndex(EIA2SoSe23_Abschlussarbeit.dropdownServe, 0);
     }
     // checks if a new icecream has to be previewed
-    function getDisplayIcecream(_posX, _posY, _creating, _displayID = -1) {
+    function getDisplayIcecream(_posX, _posY, _creating, _displayID = -1, _waffling = -1) {
         let prepIcecream;
         let theseToppings;
         let colorToppings = [];
@@ -208,7 +208,17 @@ Quellen: -
         let colorSprinkles = "";
         let hasWhipped = false;
         // get waffle bool
-        let hasWaffle = EIA2SoSe23_Abschlussarbeit.waffleCheck.checked;
+        let hasWaffle = false;
+        switch (_waffling) {
+            case -1:
+                hasWaffle = EIA2SoSe23_Abschlussarbeit.waffleCheck.checked;
+                break;
+            case 0:
+                break;
+            case 1:
+                hasWaffle = true;
+                break;
+        }
         let thisPrice = 0;
         let thisID = "";
         if (_creating) {
@@ -226,6 +236,7 @@ Quellen: -
         }
         else {
             prepIcecream = JSON.parse(JSON.stringify(EIA2SoSe23_Abschlussarbeit.savedCreams[_displayID]));
+            console.log("prepcream:", prepIcecream.title);
             // get toppin colors
             theseToppings = JSON.parse(prepIcecream.toppings);
             for (let i = 0; i < prepIcecream.toppingsAmount; i++) {
@@ -234,7 +245,7 @@ Quellen: -
             }
             // get sauce color
             havingSauce = JSON.parse("" + prepIcecream.hasSauce);
-            console.log("HasSauce", havingSauce);
+            //console.log("HasSauce", havingSauce);
             if (havingSauce === true) {
                 let thisSauce = JSON.parse("" + prepIcecream.sauce);
                 colorSauce = EIA2SoSe23_Abschlussarbeit.getIcecreamColor(thisSauce, true);
@@ -249,9 +260,10 @@ Quellen: -
             thisID = prepIcecream.id;
         }
         let thisDisplayIcecream = new EIA2SoSe23_Abschlussarbeit.DisplayIcecream(_posX, _posY, colorToppings, colorSauce, colorSprinkles, hasWhipped, hasWaffle, thisPrice, thisID);
-        console.log("DisplayIcecream:", colorToppings, colorSauce, colorSprinkles, hasWhipped, hasWaffle, thisPrice, thisID);
+        console.log("DisplayIcecream:", prepIcecream.title, colorToppings, colorSauce, colorSprinkles, hasWhipped, hasWaffle, thisPrice, thisID);
         return thisDisplayIcecream;
     }
+    EIA2SoSe23_Abschlussarbeit.getDisplayIcecream = getDisplayIcecream;
     // update selected index while triggering change event
     function setSelectedIndex(_el, _index) {
         _el.selectedIndex = _index;
@@ -281,6 +293,7 @@ Quellen: -
                 EIA2SoSe23_Abschlussarbeit.previewServeIcecream.waffle = EIA2SoSe23_Abschlussarbeit.waffleCheck.checked;
             }
             else {
+                console.log("Index", creamIndex, "Cream:", EIA2SoSe23_Abschlussarbeit.savedCreams[creamIndex].title);
                 EIA2SoSe23_Abschlussarbeit.previewServeIcecream = getDisplayIcecream(EIA2SoSe23_Abschlussarbeit.canvasW * 0.5, EIA2SoSe23_Abschlussarbeit.canvasH * 0.95, false, creamIndex);
             }
             // updating price value
@@ -563,10 +576,13 @@ Quellen: -
         //console.log("Visible Toppings: ", visibleToppings);
     }
     // click preview serve button
-    function clickPreviewServeButton(_event) {
+    function clickServeButton(_event) {
         console.log("Click Serve Button ID:", EIA2SoSe23_Abschlussarbeit.dropdownServe.selectedIndex, "Waffle?:", EIA2SoSe23_Abschlussarbeit.waffleCheck.checked);
-        if (EIA2SoSe23_Abschlussarbeit.dropdownServe.selectedIndex != 0) {
+        if (EIA2SoSe23_Abschlussarbeit.dropdownServe.selectedIndex != 0 && EIA2SoSe23_Abschlussarbeit.waitingSelectedID >= 0) {
+            // give it to customer
+            EIA2SoSe23_Abschlussarbeit.allCustomers[EIA2SoSe23_Abschlussarbeit.waitingSelectedID].giveIceream(EIA2SoSe23_Abschlussarbeit.savedCreams[(EIA2SoSe23_Abschlussarbeit.dropdownServe.selectedIndex - 1)].id);
             setSelectedIndex(EIA2SoSe23_Abschlussarbeit.dropdownServe, 0);
+            //waffleCheck.checked = false;
             // closes create form
             if (EIA2SoSe23_Abschlussarbeit.createFormOpen) {
                 EIA2SoSe23_Abschlussarbeit.creatorDiv.setAttribute("style", "display: none");
@@ -575,8 +591,11 @@ Quellen: -
                 resetCreatorFields();
             }
         }
-        else {
+        else if (EIA2SoSe23_Abschlussarbeit.waitingSelectedID >= 0) {
             alert("Select an Icecream to serve first!");
+        }
+        else {
+            alert("Select a customer to serve first!");
         }
     }
     // clik edit serve button
