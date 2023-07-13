@@ -191,7 +191,9 @@ Quellen: -
             e.draw();
             customerCount++;
         })
-        if (Math.random() < 0.1 && customerCount < 10) {
+
+        // spawn new one
+        if (Math.random() < 0.1 && customerCount < 10 && savedCreams.length > 0) {
             console.log("Spawned new customer");
             spawnNewCustomer();
         }
