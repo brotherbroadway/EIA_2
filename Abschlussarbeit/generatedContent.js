@@ -398,6 +398,7 @@ Quellen: -
         updateProductionCost(false);
         EIA2SoSe23_Abschlussarbeit.formEmpty = true;
     }
+    EIA2SoSe23_Abschlussarbeit.resetCreatorFields = resetCreatorFields;
     // click submit icecream button
     function clickSubmitButton(_event) {
         return __awaiter(this, void 0, void 0, function* () {

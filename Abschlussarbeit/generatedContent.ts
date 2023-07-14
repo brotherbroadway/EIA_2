@@ -457,7 +457,7 @@ Quellen: -
     }
 
     // resets creator fields
-    function resetCreatorFields(): void {
+    export function resetCreatorFields(): void {
         submitIcecreamButton.innerHTML = "Add Icecream";
 
         titleField.value = "";
