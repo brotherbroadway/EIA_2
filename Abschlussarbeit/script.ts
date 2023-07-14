@@ -17,6 +17,7 @@ Quellen: -
     export let priceProdPreviewParagraph: HTMLParagraphElement = <HTMLParagraphElement>document.getElementById("priceprodpreview");
 
     // creator tab elements
+    let fullCreatorDiv: HTMLDivElement = <HTMLDivElement>document.getElementById("creatorcontainer");
     export let creatorDiv: HTMLDivElement = <HTMLDivElement>document.getElementById("creatordiv");
     export let createNewBttn: HTMLButtonElement = <HTMLButtonElement>document.getElementById("createnewbutton");
     export let titleField: HTMLInputElement = <HTMLInputElement>document.getElementById("creamtitle");
@@ -29,6 +30,11 @@ Quellen: -
     export let priceField: HTMLInputElement = <HTMLInputElement>document.getElementById("creatorprice");
     export let creatorProdParagraph: HTMLParagraphElement = <HTMLParagraphElement>document.getElementById("creatorpriceprod");
     export let submitIcecreamButton: HTMLButtonElement = <HTMLButtonElement>document.getElementById("creatorsubmitbutton");
+
+    // for server data
+    export let myUrl: string = "https://webuser.hs-furtwangen.de/~ruderjon/Database/?";
+    export let savedCreams: FullIcecream[] = [];
+    export let savedCreamsAmount: number = 0;
 
     // canvas elements
     let canvas: HTMLCanvasElement = <HTMLCanvasElement>document.querySelector("canvas");
@@ -44,6 +50,7 @@ Quellen: -
     let backgroundData: ImageData;
     let animationInterval: any;
 
+    // colors
     export let bowlColor: string = "rgb(246, 255, 179)";
     export let waffleColor: string = "rgb(202, 165, 83)";
     export let whippedColor: string = "rgb(255, 248, 229)";
@@ -51,35 +58,46 @@ Quellen: -
     export let speechBubbleColor: string = "rgb(204, 247, 255)";
     export let outlineCustomerColor: string = "black";
     export let outlineSelectedColor: string = "red";
+    let instructionColor: string = "rgb(0, 255, 255)";
 
+    // rating and money
     let myRatingCurrent: number = 0;
-    let myRatingTotal: number = 50;
-    let myRatingCount: number = 10;
-    let myMoneyCurrent: number = 100;
-    let moneyDisplayCount: number = 0;
-    let myMoneyReduction: number = 10;
-    let myMoneyGain: number = 5;
+    export let myRatingTotal: number = 50;
+    export let myRatingCount: number = 10;
+    let removedDummyRatings: boolean = false;
+    export let myMoneyCurrent: number = 100;
+    export let myMoneyReduction: number = 10;
+    export let myMoneyGain: number = 5;
+    export let moneyReductionFrameCount: number = 0;
+    export let moneyGainFrameCount: number = 0;
 
+    // preview/create display icecreams
     export let previewServeIcecream: DisplayIcecream;
     export let creatingIcecream: DisplayIcecream;
     export let previewVisible: boolean = false;
 
+    // customers & shop
     export let allCustomers: Customer[] = [];
     let customerCount: number;
+    export let shopOpen: boolean = false;
+    let firstOpen: boolean = true;
+    let firstServe: boolean = true;
+    export let firstIcecream: boolean = true;
+    export let correctIcecream: boolean = true;
+    let customerWaiting: boolean = false;
+    let lastInstructionCount: number = 25;
 
+    // element bools and others
     export let createFormOpen: boolean = false;
     export let editingForm: boolean = false;
     export let formEmpty: boolean = true;
     export let sauceSelected: boolean = false;
     export let visibleToppings: number = 1;
     export let creatorIcecream: FullIcecream;
-
-    export let myUrl: string = "https://webuser.hs-furtwangen.de/~ruderjon/Database/?";
-    export let savedCreams: FullIcecream[] = [];
-    export let savedCreamsAmount: number = 0;
     export let currentSelectedPrice: number = 0;
     export let currentSelectedProdCost: number = 0;
 
+    // for canvas positions
     export let waitingPosTaken: number[] = [-1, -1, -1, -1];
     export let waitingPosCount: number = waitingPosTaken.length;
     export let seatTaken: boolean[] = [false, false, false, false, false, false];
@@ -91,6 +109,10 @@ Quellen: -
     export let waitOutsidePosX: number = -(canvasW * 0.005);
     export let seatPosX: number[] = [canvasW * 0.1375, canvasW * 0.3375, canvasW * 0.4175, canvasW * 0.6175, canvasW * 0.7075, canvasW * 0.9075];
     export let seatPosY: number = canvasH * 0.545;
+    let signPosX: number = canvasW * 0.2;
+    let signPosY: number = canvasH * 0.07;
+    let signW: number = canvasW * 0.13;
+    let signH: number = canvasH * 0.075;
 
     export enum CustomerStatus {
         Arriving,
@@ -144,6 +166,8 @@ Quellen: -
         // save background data
         backgroundData = crc2.getImageData(0, 0, canvas.width, canvas.height);
 
+        console.log("Finished drawing background");
+
         canvas.removeEventListener("click", clickCanvas);
         canvas.addEventListener("click", clickCanvas);
 
@@ -166,9 +190,13 @@ Quellen: -
         drawWall();
 
         // draw speech bubbles (if any are here)
+        customerWaiting = false;
+        
         for (let i: number = 0; i < waitingPosCount; i++) {
             if (waitingPosTaken[i] >= 0 && allCustomers[waitingPosTaken[i]].status == CustomerStatus.AskingForIcecream) {
                 allCustomers[waitingPosTaken[i]].drawSpeechbubble();
+
+                customerWaiting = true;
             }
         }
 
@@ -181,6 +209,15 @@ Quellen: -
         if (createFormOpen) {
             creatingIcecream.draw();
         }
+
+        // draws rating and bank value
+        drawRatingBank();
+
+        // draws clickable shop sign
+        drawShopSign();
+
+        // check draw instructions
+        checkInstructions();
     }
 
     // draws customers
@@ -193,7 +230,7 @@ Quellen: -
         })
 
         // spawn new one
-        if (Math.random() < 0.1 && customerCount < 10 && savedCreams.length > 0) {
+        if (shopOpen && Math.random() < 0.1 && customerCount < 10 && savedCreams.length > 0) {
             console.log("Spawned new customer");
             spawnNewCustomer();
         }
@@ -210,6 +247,179 @@ Quellen: -
 
         let newCustomer = new Customer(spawnX, randomH, randomSpeed, randomSpeed * 0.5, allCustomers.length, randomIcecream);
         allCustomers.push(newCustomer);
+    }
+
+    // draws clickable shop sign
+    function drawShopSign(): void {
+        crc2.save();
+        crc2.translate(signPosX, signPosY);
+
+        let fontSize: number = canvasW * 0.04;
+        let fontColor: string = "orange";
+        let buttonColor: string = "red";
+        let signText: string = "CLOSED";
+
+        // changes if open
+        if (shopOpen) {
+            fontColor = "yellow";
+            buttonColor = "rgb(0, 255, 0)";
+            signText = "OPEN";
+        }
+
+        // rect
+        crc2.beginPath();
+        crc2.roundRect(0, 0, signW, signH, fontSize * 0.1);
+        crc2.strokeStyle = "black";
+        crc2.lineWidth = fontSize * 0.2;
+        crc2.fillStyle = buttonColor;
+        crc2.stroke();
+        crc2.fill();
+        crc2.closePath();
+
+        // text
+        crc2.fillStyle = fontColor;
+        crc2.font = "bold " + (fontSize * 0.8) + "px Impact";
+        crc2.textAlign = "center";
+        crc2.fillText(signText, signW * 0.5, signH * 0.725);
+
+        crc2.restore();
+    }
+
+    // draws rating and bank display
+    function drawRatingBank(): void {
+        crc2.save();
+        crc2.translate(canvasW * 0.86, canvasH * 0.04);
+
+        // draws & calculates rating with one decimal point
+        if (!removedDummyRatings && myRatingCount > 20) {
+            // has 10 dummy ratings by default, removes them when 10 actual customers left a rating
+            myRatingCount -= 10;
+            myRatingTotal -= 50;
+
+            removedDummyRatings = true;
+            console.log("Removed dummy ratings");
+        } 
+
+        myRatingCurrent = Math.floor((myRatingTotal / myRatingCount) * 10) / 10;
+
+        let fontColor: string = getRatingColor(myRatingCurrent);
+        let fontSize: number = canvasW * 0.025;
+        let fontH: number = canvasH * 0.04;
+        let ratingW: number = canvasW * 0.0225;
+
+        crc2.fillStyle = fontColor;
+        crc2.strokeStyle = "black";
+        crc2.lineWidth = fontSize * 0.15;
+        crc2.font = "bold " + (fontSize * 0.8) + "px Arial";
+        crc2.textAlign = "center";
+        crc2.strokeText("Rating", 0, 0);
+        crc2.fillText("Rating", 0, 0);
+        crc2.textAlign = "right";
+        crc2.strokeText(myRatingCurrent + "/10", ratingW, fontH);
+        crc2.fillText(myRatingCurrent + "/10", ratingW, fontH);
+
+        // draws bank
+        let bankW: number = canvasW * 0.1;
+
+        // show money change
+        if (moneyReductionFrameCount > 0) {
+            let changeColor: string = "red";
+            let changePrefix: string = "-";
+            let moneyChange: number = myMoneyGain - myMoneyReduction;
+
+            // show gain if there is any
+            if (moneyGainFrameCount > 0 && moneyChange > 0) {
+                changeColor = "rgb(0, 255, 0)";
+                changePrefix = "+";
+            } else {
+                moneyChange = myMoneyReduction;
+            }
+
+            crc2.fillStyle = changeColor;
+            crc2.strokeStyle = "black";
+            crc2.lineWidth = fontSize * 0.15;
+            crc2.font = "bold " + (fontSize * 0.8) + "px Arial";
+            crc2.textAlign = "right";
+            crc2.strokeText(changePrefix + "$" + moneyChange.toFixed(2), bankW + ratingW, fontH * 2);
+            crc2.fillText(changePrefix + "$" + moneyChange.toFixed(2), bankW + ratingW, fontH * 2);
+        }
+
+        moneyReductionFrameCount--;
+        moneyGainFrameCount--;
+
+        // current money
+        crc2.fillStyle = "white";
+        crc2.strokeStyle = "black";
+        crc2.lineWidth = fontSize * 0.15;
+        crc2.font = "bold " + (fontSize * 0.8) + "px Arial";
+        crc2.textAlign = "center";
+        crc2.strokeText("Bank", bankW - (ratingW * 0.5), 0);
+        crc2.fillText("Bank", bankW - (ratingW * 0.5), 0);
+        crc2.textAlign = "right";
+        crc2.strokeText("$" + myMoneyCurrent.toFixed(2), bankW + ratingW, fontH);
+        crc2.fillText("$" + myMoneyCurrent.toFixed(2), bankW + ratingW, fontH);
+
+        crc2.restore();
+    }
+
+    // checks if there's any instructions to draw
+    function checkInstructions(): void {
+        if (lastInstructionCount > 0) {
+            // first open text
+            if (firstOpen) {
+                let openText: string = "Click on the sign to open the shop!";
+
+                drawInstructions(openText);
+            } else if (firstServe && customerWaiting) {
+                // first customer serving text
+                let serveText: string = "Click on a customer's face to select them!";
+
+                drawInstructions(serveText);
+            } else if (firstIcecream && !firstServe && customerWaiting) {
+                // first icecream serving text
+                let iceText: string = "Now select the correct icecream";
+                let iceText2: string = "from your list to serve them!";
+
+                drawInstructions(iceText, iceText2);
+            } else if (!firstIcecream && !firstServe && customerWaiting) {
+                // right/wrong serving text
+                let correctText: string = "Nice one!";
+                let correctText2: string = "Keep it up!";
+
+                if (!correctIcecream) {
+                    correctText = "That wasn't the right one!";
+                    correctText2 = "Try again!";
+                } else {
+                    // count down last instruction display when correctly chosen
+                    lastInstructionCount--;
+                }
+
+                drawInstructions(correctText, correctText2);
+            }
+        }
+    }
+
+    // draws instruction text
+    function drawInstructions(_text: string, _text2: string = ""): void {
+        crc2.save();
+        crc2.translate(canvasW * 0.58, canvasH * 0.06);
+
+        let fontSize: number = canvasW * 0.04;
+
+        crc2.fillStyle = instructionColor;
+        crc2.strokeStyle = "black";
+        crc2.lineWidth = fontSize * 0.1;
+        crc2.font = "bold " + (fontSize * 0.5) + "px Arial";
+        crc2.textAlign = "center";
+        crc2.strokeText(_text, 0, 0);
+        crc2.fillText(_text, 0, 0);
+
+        if (_text2.length > 0) {
+            crc2.strokeText(_text2, 0, canvasH * 0.035);
+            crc2.fillText(_text2, 0, canvasH * 0.035);
+        }
+
+        crc2.restore();
     }
 
     // click canvas event
@@ -234,11 +444,32 @@ Quellen: -
             } else if (mouseX > waitingPosX[3] && mouseX < (waitingPosX[3] + waitingPosSize)) {
                 selectCustomer(3);
             }
-        } else if (waitingSelectedID >= 0) { // unselect customer if clicked anywhere else
-            console.log("Unselected Customer (by clicking anywhere)");
-            allCustomers[waitingSelectedID].selected = false
+        } else { // unselect customer if clicked anywhere else
+            if (waitingSelectedID >= 0) {
+                console.log("Unselected Customer (by clicking anywhere)");
+                allCustomers[waitingSelectedID].selected = false
+    
+                waitingSelectedID = -2;
+            }
+            if (mouseX > signPosX && mouseX < (signPosX + signW * 1.02) && mouseY > signPosY && mouseY < (signPosY + signH * 1.15)) {
+                // click shop sign
+                if (!shopOpen) {
+                    shopOpen = true;
+                    firstOpen = false;
 
-            waitingSelectedID = -2;
+                    // hide creator div, edit, delete elements
+                    fullCreatorDiv.setAttribute("style", "display: none");
+                    editServeBttn.setAttribute("style", "display: none");
+                    deleteServeBttn.setAttribute("style", "display: none");
+                } else {
+                    shopOpen = false;
+
+                    // show creator div, edit, delete elements
+                    fullCreatorDiv.setAttribute("style", "display: inline");
+                    editServeBttn.setAttribute("style", "display: inline");
+                    deleteServeBttn.setAttribute("style", "display: inline");
+                }
+            }
         }
     }
 
@@ -251,12 +482,15 @@ Quellen: -
             && allCustomers[waitingPosTaken[_waitPos]].status == CustomerStatus.AskingForIcecream) {
                 if (waitingSelectedID >= 0 && allCustomers[waitingSelectedID].selected === true) {
                     allCustomers[waitingSelectedID].selected = false;
+                    console.log("Unselected previous Customer");
                 }
 
                 waitingSelectedID = waitingPosTaken[_waitPos];
 
                 console.log("Selected", waitingSelectedID);
                 allCustomers[waitingSelectedID].selected = true;
+
+                firstServe = false;
         } else if (waitingPosTaken[_waitPos] == waitingSelectedID && allCustomers[waitingPosTaken[_waitPos]].status == CustomerStatus.AskingForIcecream) { // unselect wait pos customer
             console.log("Unselected Customer (by direct click)");
             allCustomers[waitingSelectedID].selected = false;
@@ -267,7 +501,7 @@ Quellen: -
     
     // draw background with golden ratio
     function drawBackground(): void {
-        console.log("Background");
+        //console.log("Background");
 
         // adds background gradient with golden ratio
         let gradient: CanvasGradient = crc2.createLinearGradient(0, 0, 0, canvasH);
@@ -281,7 +515,7 @@ Quellen: -
 
     // draws sun (can't use Vector (not found?))
     function drawSun(_posX: number, _posY: number): void {
-        console.log("Sun", _posX, _posY);
+        //console.log("Sun", _posX, _posY);
 
         // shine radius
         let r1: number = 30;
@@ -302,7 +536,7 @@ Quellen: -
 
     // draws clouds
     function drawCloud(_posX: number, _posY: number, _sizeX: number, _sizeY: number): void {
-        console.log("Cloud", _posX, _posY, _sizeX, _sizeY);
+        //console.log("Cloud", _posX, _posY, _sizeX, _sizeY);
 
         // generate particles
         let nParticles: number = _sizeX * 0.2;
@@ -415,7 +649,7 @@ Quellen: -
 
     // draw chair
     function drawChair(_posX: number, _posY: number, _right: boolean): void {
-        console.log("Chair", _posX, _posY);
+        //console.log("Chair", _posX, _posY);
 
         crc2.save();
         crc2.translate(_posX, _posY);
@@ -452,7 +686,7 @@ Quellen: -
 
     // draw table
     function drawTable(_posX: number, _posY: number): void {
-        console.log("Table", _posX, _posY);
+        //console.log("Table", _posX, _posY);
 
         crc2.save();
         crc2.translate(_posX, _posY);
@@ -599,7 +833,7 @@ Quellen: -
 
     // gets rating color rgb code
     export function getRatingColor(_rating: number): string {
-        let color: string = "rgb(0, 118, 245)"; // rating more than 9 (default) - darkblue
+        let color: string = "rgb(102, 0, 255)" // rating is 10 - purple
 
         if (_rating < 2) {
             color= "rgb(128, 0, 0)"; // rating less than 2 - darkred
@@ -613,6 +847,8 @@ Quellen: -
             color = "rgb(16, 245, 0)"; // rating less than 8 - green
         } else if (_rating < 9) {
             color = "rgb(0, 245, 204)"; // rating less than 9 - lightblue
+        } else if (_rating < 10) {
+            color = "rgb(0, 118, 245)"; // rating more than 9 - darkblue
         }
 
         return color;

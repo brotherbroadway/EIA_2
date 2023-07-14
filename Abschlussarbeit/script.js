@@ -26,6 +26,7 @@ Quellen: -
     EIA2SoSe23_Abschlussarbeit.pricePreviewParagraph = document.getElementById("pricepreview");
     EIA2SoSe23_Abschlussarbeit.priceProdPreviewParagraph = document.getElementById("priceprodpreview");
     // creator tab elements
+    let fullCreatorDiv = document.getElementById("creatorcontainer");
     EIA2SoSe23_Abschlussarbeit.creatorDiv = document.getElementById("creatordiv");
     EIA2SoSe23_Abschlussarbeit.createNewBttn = document.getElementById("createnewbutton");
     EIA2SoSe23_Abschlussarbeit.titleField = document.getElementById("creamtitle");
@@ -38,6 +39,10 @@ Quellen: -
     EIA2SoSe23_Abschlussarbeit.priceField = document.getElementById("creatorprice");
     EIA2SoSe23_Abschlussarbeit.creatorProdParagraph = document.getElementById("creatorpriceprod");
     EIA2SoSe23_Abschlussarbeit.submitIcecreamButton = document.getElementById("creatorsubmitbutton");
+    // for server data
+    EIA2SoSe23_Abschlussarbeit.myUrl = "https://webuser.hs-furtwangen.de/~ruderjon/Database/?";
+    EIA2SoSe23_Abschlussarbeit.savedCreams = [];
+    EIA2SoSe23_Abschlussarbeit.savedCreamsAmount = 0;
     // canvas elements
     let canvas = document.querySelector("canvas");
     EIA2SoSe23_Abschlussarbeit.crc2 = canvas.getContext("2d");
@@ -51,6 +56,7 @@ Quellen: -
     EIA2SoSe23_Abschlussarbeit.horizon = EIA2SoSe23_Abschlussarbeit.canvasH * golden;
     let backgroundData;
     let animationInterval;
+    // colors
     EIA2SoSe23_Abschlussarbeit.bowlColor = "rgb(246, 255, 179)";
     EIA2SoSe23_Abschlussarbeit.waffleColor = "rgb(202, 165, 83)";
     EIA2SoSe23_Abschlussarbeit.whippedColor = "rgb(255, 248, 229)";
@@ -58,26 +64,37 @@ Quellen: -
     EIA2SoSe23_Abschlussarbeit.speechBubbleColor = "rgb(204, 247, 255)";
     EIA2SoSe23_Abschlussarbeit.outlineCustomerColor = "black";
     EIA2SoSe23_Abschlussarbeit.outlineSelectedColor = "red";
+    let instructionColor = "rgb(0, 255, 255)";
+    // rating and money
     let myRatingCurrent = 0;
-    let myRatingTotal = 50;
-    let myRatingCount = 10;
-    let myMoneyCurrent = 100;
-    let moneyDisplayCount = 0;
-    let myMoneyReduction = 10;
-    let myMoneyGain = 5;
+    EIA2SoSe23_Abschlussarbeit.myRatingTotal = 50;
+    EIA2SoSe23_Abschlussarbeit.myRatingCount = 10;
+    let removedDummyRatings = false;
+    EIA2SoSe23_Abschlussarbeit.myMoneyCurrent = 100;
+    EIA2SoSe23_Abschlussarbeit.myMoneyReduction = 10;
+    EIA2SoSe23_Abschlussarbeit.myMoneyGain = 5;
+    EIA2SoSe23_Abschlussarbeit.moneyReductionFrameCount = 0;
+    EIA2SoSe23_Abschlussarbeit.moneyGainFrameCount = 0;
     EIA2SoSe23_Abschlussarbeit.previewVisible = false;
+    // customers & shop
     EIA2SoSe23_Abschlussarbeit.allCustomers = [];
     let customerCount;
+    EIA2SoSe23_Abschlussarbeit.shopOpen = false;
+    let firstOpen = true;
+    let firstServe = true;
+    EIA2SoSe23_Abschlussarbeit.firstIcecream = true;
+    EIA2SoSe23_Abschlussarbeit.correctIcecream = true;
+    let customerWaiting = false;
+    let lastInstructionCount = 25;
+    // element bools and others
     EIA2SoSe23_Abschlussarbeit.createFormOpen = false;
     EIA2SoSe23_Abschlussarbeit.editingForm = false;
     EIA2SoSe23_Abschlussarbeit.formEmpty = true;
     EIA2SoSe23_Abschlussarbeit.sauceSelected = false;
     EIA2SoSe23_Abschlussarbeit.visibleToppings = 1;
-    EIA2SoSe23_Abschlussarbeit.myUrl = "https://webuser.hs-furtwangen.de/~ruderjon/Database/?";
-    EIA2SoSe23_Abschlussarbeit.savedCreams = [];
-    EIA2SoSe23_Abschlussarbeit.savedCreamsAmount = 0;
     EIA2SoSe23_Abschlussarbeit.currentSelectedPrice = 0;
     EIA2SoSe23_Abschlussarbeit.currentSelectedProdCost = 0;
+    // for canvas positions
     EIA2SoSe23_Abschlussarbeit.waitingPosTaken = [-1, -1, -1, -1];
     EIA2SoSe23_Abschlussarbeit.waitingPosCount = EIA2SoSe23_Abschlussarbeit.waitingPosTaken.length;
     EIA2SoSe23_Abschlussarbeit.seatTaken = [false, false, false, false, false, false];
@@ -89,6 +106,10 @@ Quellen: -
     EIA2SoSe23_Abschlussarbeit.waitOutsidePosX = -(EIA2SoSe23_Abschlussarbeit.canvasW * 0.005);
     EIA2SoSe23_Abschlussarbeit.seatPosX = [EIA2SoSe23_Abschlussarbeit.canvasW * 0.1375, EIA2SoSe23_Abschlussarbeit.canvasW * 0.3375, EIA2SoSe23_Abschlussarbeit.canvasW * 0.4175, EIA2SoSe23_Abschlussarbeit.canvasW * 0.6175, EIA2SoSe23_Abschlussarbeit.canvasW * 0.7075, EIA2SoSe23_Abschlussarbeit.canvasW * 0.9075];
     EIA2SoSe23_Abschlussarbeit.seatPosY = EIA2SoSe23_Abschlussarbeit.canvasH * 0.545;
+    let signPosX = EIA2SoSe23_Abschlussarbeit.canvasW * 0.2;
+    let signPosY = EIA2SoSe23_Abschlussarbeit.canvasH * 0.07;
+    let signW = EIA2SoSe23_Abschlussarbeit.canvasW * 0.13;
+    let signH = EIA2SoSe23_Abschlussarbeit.canvasH * 0.075;
     let CustomerStatus;
     (function (CustomerStatus) {
         CustomerStatus[CustomerStatus["Arriving"] = 0] = "Arriving";
@@ -134,6 +155,7 @@ Quellen: -
         drawShop(EIA2SoSe23_Abschlussarbeit.canvasW * 0.125, EIA2SoSe23_Abschlussarbeit.horizon);
         // save background data
         backgroundData = EIA2SoSe23_Abschlussarbeit.crc2.getImageData(0, 0, canvas.width, canvas.height);
+        console.log("Finished drawing background");
         canvas.removeEventListener("click", clickCanvas);
         canvas.addEventListener("click", clickCanvas);
         //spawnNewCustomer();
@@ -149,9 +171,11 @@ Quellen: -
         drawCounter();
         drawWall();
         // draw speech bubbles (if any are here)
+        customerWaiting = false;
         for (let i = 0; i < EIA2SoSe23_Abschlussarbeit.waitingPosCount; i++) {
             if (EIA2SoSe23_Abschlussarbeit.waitingPosTaken[i] >= 0 && EIA2SoSe23_Abschlussarbeit.allCustomers[EIA2SoSe23_Abschlussarbeit.waitingPosTaken[i]].status == CustomerStatus.AskingForIcecream) {
                 EIA2SoSe23_Abschlussarbeit.allCustomers[EIA2SoSe23_Abschlussarbeit.waitingPosTaken[i]].drawSpeechbubble();
+                customerWaiting = true;
             }
         }
         // draws preview icecream
@@ -162,6 +186,12 @@ Quellen: -
         if (EIA2SoSe23_Abschlussarbeit.createFormOpen) {
             EIA2SoSe23_Abschlussarbeit.creatingIcecream.draw();
         }
+        // draws rating and bank value
+        drawRatingBank();
+        // draws clickable shop sign
+        drawShopSign();
+        // check draw instructions
+        checkInstructions();
     }
     // draws customers
     function drawCustomers() {
@@ -171,7 +201,7 @@ Quellen: -
             customerCount++;
         });
         // spawn new one
-        if (Math.random() < 0.1 && customerCount < 10 && EIA2SoSe23_Abschlussarbeit.savedCreams.length > 0) {
+        if (EIA2SoSe23_Abschlussarbeit.shopOpen && Math.random() < 0.1 && customerCount < 10 && EIA2SoSe23_Abschlussarbeit.savedCreams.length > 0) {
             console.log("Spawned new customer");
             spawnNewCustomer();
         }
@@ -186,6 +216,154 @@ Quellen: -
         let randomIcecream = EIA2SoSe23_Abschlussarbeit.getDisplayIcecream(0, 0, false, randomIceNum, randomWaffle);
         let newCustomer = new EIA2SoSe23_Abschlussarbeit.Customer(EIA2SoSe23_Abschlussarbeit.spawnX, randomH, randomSpeed, randomSpeed * 0.5, EIA2SoSe23_Abschlussarbeit.allCustomers.length, randomIcecream);
         EIA2SoSe23_Abschlussarbeit.allCustomers.push(newCustomer);
+    }
+    // draws clickable shop sign
+    function drawShopSign() {
+        EIA2SoSe23_Abschlussarbeit.crc2.save();
+        EIA2SoSe23_Abschlussarbeit.crc2.translate(signPosX, signPosY);
+        let fontSize = EIA2SoSe23_Abschlussarbeit.canvasW * 0.04;
+        let fontColor = "orange";
+        let buttonColor = "red";
+        let signText = "CLOSED";
+        // changes if open
+        if (EIA2SoSe23_Abschlussarbeit.shopOpen) {
+            fontColor = "yellow";
+            buttonColor = "rgb(0, 255, 0)";
+            signText = "OPEN";
+        }
+        // rect
+        EIA2SoSe23_Abschlussarbeit.crc2.beginPath();
+        EIA2SoSe23_Abschlussarbeit.crc2.roundRect(0, 0, signW, signH, fontSize * 0.1);
+        EIA2SoSe23_Abschlussarbeit.crc2.strokeStyle = "black";
+        EIA2SoSe23_Abschlussarbeit.crc2.lineWidth = fontSize * 0.2;
+        EIA2SoSe23_Abschlussarbeit.crc2.fillStyle = buttonColor;
+        EIA2SoSe23_Abschlussarbeit.crc2.stroke();
+        EIA2SoSe23_Abschlussarbeit.crc2.fill();
+        EIA2SoSe23_Abschlussarbeit.crc2.closePath();
+        // text
+        EIA2SoSe23_Abschlussarbeit.crc2.fillStyle = fontColor;
+        EIA2SoSe23_Abschlussarbeit.crc2.font = "bold " + (fontSize * 0.8) + "px Impact";
+        EIA2SoSe23_Abschlussarbeit.crc2.textAlign = "center";
+        EIA2SoSe23_Abschlussarbeit.crc2.fillText(signText, signW * 0.5, signH * 0.725);
+        EIA2SoSe23_Abschlussarbeit.crc2.restore();
+    }
+    // draws rating and bank display
+    function drawRatingBank() {
+        EIA2SoSe23_Abschlussarbeit.crc2.save();
+        EIA2SoSe23_Abschlussarbeit.crc2.translate(EIA2SoSe23_Abschlussarbeit.canvasW * 0.86, EIA2SoSe23_Abschlussarbeit.canvasH * 0.04);
+        // draws & calculates rating with one decimal point
+        if (!removedDummyRatings && EIA2SoSe23_Abschlussarbeit.myRatingCount > 20) {
+            // has 10 dummy ratings by default, removes them when 10 actual customers left a rating
+            EIA2SoSe23_Abschlussarbeit.myRatingCount -= 10;
+            EIA2SoSe23_Abschlussarbeit.myRatingTotal -= 50;
+            removedDummyRatings = true;
+            console.log("Removed dummy ratings");
+        }
+        myRatingCurrent = Math.floor((EIA2SoSe23_Abschlussarbeit.myRatingTotal / EIA2SoSe23_Abschlussarbeit.myRatingCount) * 10) / 10;
+        let fontColor = getRatingColor(myRatingCurrent);
+        let fontSize = EIA2SoSe23_Abschlussarbeit.canvasW * 0.025;
+        let fontH = EIA2SoSe23_Abschlussarbeit.canvasH * 0.04;
+        let ratingW = EIA2SoSe23_Abschlussarbeit.canvasW * 0.0225;
+        EIA2SoSe23_Abschlussarbeit.crc2.fillStyle = fontColor;
+        EIA2SoSe23_Abschlussarbeit.crc2.strokeStyle = "black";
+        EIA2SoSe23_Abschlussarbeit.crc2.lineWidth = fontSize * 0.15;
+        EIA2SoSe23_Abschlussarbeit.crc2.font = "bold " + (fontSize * 0.8) + "px Arial";
+        EIA2SoSe23_Abschlussarbeit.crc2.textAlign = "center";
+        EIA2SoSe23_Abschlussarbeit.crc2.strokeText("Rating", 0, 0);
+        EIA2SoSe23_Abschlussarbeit.crc2.fillText("Rating", 0, 0);
+        EIA2SoSe23_Abschlussarbeit.crc2.textAlign = "right";
+        EIA2SoSe23_Abschlussarbeit.crc2.strokeText(myRatingCurrent + "/10", ratingW, fontH);
+        EIA2SoSe23_Abschlussarbeit.crc2.fillText(myRatingCurrent + "/10", ratingW, fontH);
+        // draws bank
+        let bankW = EIA2SoSe23_Abschlussarbeit.canvasW * 0.1;
+        // show money change
+        if (EIA2SoSe23_Abschlussarbeit.moneyReductionFrameCount > 0) {
+            let changeColor = "red";
+            let changePrefix = "-";
+            let moneyChange = EIA2SoSe23_Abschlussarbeit.myMoneyGain - EIA2SoSe23_Abschlussarbeit.myMoneyReduction;
+            // show gain if there is any
+            if (EIA2SoSe23_Abschlussarbeit.moneyGainFrameCount > 0 && moneyChange > 0) {
+                changeColor = "rgb(0, 255, 0)";
+                changePrefix = "+";
+            }
+            else {
+                moneyChange = EIA2SoSe23_Abschlussarbeit.myMoneyReduction;
+            }
+            EIA2SoSe23_Abschlussarbeit.crc2.fillStyle = changeColor;
+            EIA2SoSe23_Abschlussarbeit.crc2.strokeStyle = "black";
+            EIA2SoSe23_Abschlussarbeit.crc2.lineWidth = fontSize * 0.15;
+            EIA2SoSe23_Abschlussarbeit.crc2.font = "bold " + (fontSize * 0.8) + "px Arial";
+            EIA2SoSe23_Abschlussarbeit.crc2.textAlign = "right";
+            EIA2SoSe23_Abschlussarbeit.crc2.strokeText(changePrefix + "$" + moneyChange.toFixed(2), bankW + ratingW, fontH * 2);
+            EIA2SoSe23_Abschlussarbeit.crc2.fillText(changePrefix + "$" + moneyChange.toFixed(2), bankW + ratingW, fontH * 2);
+        }
+        EIA2SoSe23_Abschlussarbeit.moneyReductionFrameCount--;
+        EIA2SoSe23_Abschlussarbeit.moneyGainFrameCount--;
+        // current money
+        EIA2SoSe23_Abschlussarbeit.crc2.fillStyle = "white";
+        EIA2SoSe23_Abschlussarbeit.crc2.strokeStyle = "black";
+        EIA2SoSe23_Abschlussarbeit.crc2.lineWidth = fontSize * 0.15;
+        EIA2SoSe23_Abschlussarbeit.crc2.font = "bold " + (fontSize * 0.8) + "px Arial";
+        EIA2SoSe23_Abschlussarbeit.crc2.textAlign = "center";
+        EIA2SoSe23_Abschlussarbeit.crc2.strokeText("Bank", bankW - (ratingW * 0.5), 0);
+        EIA2SoSe23_Abschlussarbeit.crc2.fillText("Bank", bankW - (ratingW * 0.5), 0);
+        EIA2SoSe23_Abschlussarbeit.crc2.textAlign = "right";
+        EIA2SoSe23_Abschlussarbeit.crc2.strokeText("$" + EIA2SoSe23_Abschlussarbeit.myMoneyCurrent.toFixed(2), bankW + ratingW, fontH);
+        EIA2SoSe23_Abschlussarbeit.crc2.fillText("$" + EIA2SoSe23_Abschlussarbeit.myMoneyCurrent.toFixed(2), bankW + ratingW, fontH);
+        EIA2SoSe23_Abschlussarbeit.crc2.restore();
+    }
+    // checks if there's any instructions to draw
+    function checkInstructions() {
+        if (lastInstructionCount > 0) {
+            // first open text
+            if (firstOpen) {
+                let openText = "Click on the sign to open the shop!";
+                drawInstructions(openText);
+            }
+            else if (firstServe && customerWaiting) {
+                // first customer serving text
+                let serveText = "Click on a customer's face to select them!";
+                drawInstructions(serveText);
+            }
+            else if (EIA2SoSe23_Abschlussarbeit.firstIcecream && !firstServe && customerWaiting) {
+                // first icecream serving text
+                let iceText = "Now select the correct icecream";
+                let iceText2 = "from your list to serve them!";
+                drawInstructions(iceText, iceText2);
+            }
+            else if (!EIA2SoSe23_Abschlussarbeit.firstIcecream && !firstServe && customerWaiting) {
+                // right/wrong serving text
+                let correctText = "Nice one!";
+                let correctText2 = "Keep it up!";
+                if (!EIA2SoSe23_Abschlussarbeit.correctIcecream) {
+                    correctText = "That wasn't the right one!";
+                    correctText2 = "Try again!";
+                }
+                else {
+                    // count down last instruction display when correctly chosen
+                    lastInstructionCount--;
+                }
+                drawInstructions(correctText, correctText2);
+            }
+        }
+    }
+    // draws instruction text
+    function drawInstructions(_text, _text2 = "") {
+        EIA2SoSe23_Abschlussarbeit.crc2.save();
+        EIA2SoSe23_Abschlussarbeit.crc2.translate(EIA2SoSe23_Abschlussarbeit.canvasW * 0.58, EIA2SoSe23_Abschlussarbeit.canvasH * 0.06);
+        let fontSize = EIA2SoSe23_Abschlussarbeit.canvasW * 0.04;
+        EIA2SoSe23_Abschlussarbeit.crc2.fillStyle = instructionColor;
+        EIA2SoSe23_Abschlussarbeit.crc2.strokeStyle = "black";
+        EIA2SoSe23_Abschlussarbeit.crc2.lineWidth = fontSize * 0.1;
+        EIA2SoSe23_Abschlussarbeit.crc2.font = "bold " + (fontSize * 0.5) + "px Arial";
+        EIA2SoSe23_Abschlussarbeit.crc2.textAlign = "center";
+        EIA2SoSe23_Abschlussarbeit.crc2.strokeText(_text, 0, 0);
+        EIA2SoSe23_Abschlussarbeit.crc2.fillText(_text, 0, 0);
+        if (_text2.length > 0) {
+            EIA2SoSe23_Abschlussarbeit.crc2.strokeText(_text2, 0, EIA2SoSe23_Abschlussarbeit.canvasH * 0.035);
+            EIA2SoSe23_Abschlussarbeit.crc2.fillText(_text2, 0, EIA2SoSe23_Abschlussarbeit.canvasH * 0.035);
+        }
+        EIA2SoSe23_Abschlussarbeit.crc2.restore();
     }
     // click canvas event
     function clickCanvas(_event) {
@@ -209,10 +387,30 @@ Quellen: -
                 selectCustomer(3);
             }
         }
-        else if (EIA2SoSe23_Abschlussarbeit.waitingSelectedID >= 0) { // unselect customer if clicked anywhere else
-            console.log("Unselected Customer (by clicking anywhere)");
-            EIA2SoSe23_Abschlussarbeit.allCustomers[EIA2SoSe23_Abschlussarbeit.waitingSelectedID].selected = false;
-            EIA2SoSe23_Abschlussarbeit.waitingSelectedID = -2;
+        else { // unselect customer if clicked anywhere else
+            if (EIA2SoSe23_Abschlussarbeit.waitingSelectedID >= 0) {
+                console.log("Unselected Customer (by clicking anywhere)");
+                EIA2SoSe23_Abschlussarbeit.allCustomers[EIA2SoSe23_Abschlussarbeit.waitingSelectedID].selected = false;
+                EIA2SoSe23_Abschlussarbeit.waitingSelectedID = -2;
+            }
+            if (mouseX > signPosX && mouseX < (signPosX + signW * 1.02) && mouseY > signPosY && mouseY < (signPosY + signH * 1.15)) {
+                // click shop sign
+                if (!EIA2SoSe23_Abschlussarbeit.shopOpen) {
+                    EIA2SoSe23_Abschlussarbeit.shopOpen = true;
+                    firstOpen = false;
+                    // hide creator div, edit, delete elements
+                    fullCreatorDiv.setAttribute("style", "display: none");
+                    EIA2SoSe23_Abschlussarbeit.editServeBttn.setAttribute("style", "display: none");
+                    EIA2SoSe23_Abschlussarbeit.deleteServeBttn.setAttribute("style", "display: none");
+                }
+                else {
+                    EIA2SoSe23_Abschlussarbeit.shopOpen = false;
+                    // show creator div, edit, delete elements
+                    fullCreatorDiv.setAttribute("style", "display: inline");
+                    EIA2SoSe23_Abschlussarbeit.editServeBttn.setAttribute("style", "display: inline");
+                    EIA2SoSe23_Abschlussarbeit.deleteServeBttn.setAttribute("style", "display: inline");
+                }
+            }
         }
     }
     // selects customer at the spot (if there's one there)
@@ -223,10 +421,12 @@ Quellen: -
             && EIA2SoSe23_Abschlussarbeit.allCustomers[EIA2SoSe23_Abschlussarbeit.waitingPosTaken[_waitPos]].status == CustomerStatus.AskingForIcecream) {
             if (EIA2SoSe23_Abschlussarbeit.waitingSelectedID >= 0 && EIA2SoSe23_Abschlussarbeit.allCustomers[EIA2SoSe23_Abschlussarbeit.waitingSelectedID].selected === true) {
                 EIA2SoSe23_Abschlussarbeit.allCustomers[EIA2SoSe23_Abschlussarbeit.waitingSelectedID].selected = false;
+                console.log("Unselected previous Customer");
             }
             EIA2SoSe23_Abschlussarbeit.waitingSelectedID = EIA2SoSe23_Abschlussarbeit.waitingPosTaken[_waitPos];
             console.log("Selected", EIA2SoSe23_Abschlussarbeit.waitingSelectedID);
             EIA2SoSe23_Abschlussarbeit.allCustomers[EIA2SoSe23_Abschlussarbeit.waitingSelectedID].selected = true;
+            firstServe = false;
         }
         else if (EIA2SoSe23_Abschlussarbeit.waitingPosTaken[_waitPos] == EIA2SoSe23_Abschlussarbeit.waitingSelectedID && EIA2SoSe23_Abschlussarbeit.allCustomers[EIA2SoSe23_Abschlussarbeit.waitingPosTaken[_waitPos]].status == CustomerStatus.AskingForIcecream) { // unselect wait pos customer
             console.log("Unselected Customer (by direct click)");
@@ -236,7 +436,7 @@ Quellen: -
     }
     // draw background with golden ratio
     function drawBackground() {
-        console.log("Background");
+        //console.log("Background");
         // adds background gradient with golden ratio
         let gradient = EIA2SoSe23_Abschlussarbeit.crc2.createLinearGradient(0, 0, 0, EIA2SoSe23_Abschlussarbeit.canvasH);
         gradient.addColorStop(0, "lightblue");
@@ -247,7 +447,7 @@ Quellen: -
     }
     // draws sun (can't use Vector (not found?))
     function drawSun(_posX, _posY) {
-        console.log("Sun", _posX, _posY);
+        //console.log("Sun", _posX, _posY);
         // shine radius
         let r1 = 30;
         let r2 = 150;
@@ -264,7 +464,7 @@ Quellen: -
     }
     // draws clouds
     function drawCloud(_posX, _posY, _sizeX, _sizeY) {
-        console.log("Cloud", _posX, _posY, _sizeX, _sizeY);
+        //console.log("Cloud", _posX, _posY, _sizeX, _sizeY);
         // generate particles
         let nParticles = _sizeX * 0.2;
         let radiusParticle = _sizeY * 0.6;
@@ -359,7 +559,7 @@ Quellen: -
     }
     // draw chair
     function drawChair(_posX, _posY, _right) {
-        console.log("Chair", _posX, _posY);
+        //console.log("Chair", _posX, _posY);
         EIA2SoSe23_Abschlussarbeit.crc2.save();
         EIA2SoSe23_Abschlussarbeit.crc2.translate(_posX, _posY);
         let maxH = -(EIA2SoSe23_Abschlussarbeit.canvasH * 0.28);
@@ -389,7 +589,7 @@ Quellen: -
     }
     // draw table
     function drawTable(_posX, _posY) {
-        console.log("Table", _posX, _posY);
+        //console.log("Table", _posX, _posY);
         EIA2SoSe23_Abschlussarbeit.crc2.save();
         EIA2SoSe23_Abschlussarbeit.crc2.translate(_posX, _posY);
         let footW = EIA2SoSe23_Abschlussarbeit.canvasW * 0.01;
@@ -517,7 +717,7 @@ Quellen: -
     EIA2SoSe23_Abschlussarbeit.getMoodColor = getMoodColor;
     // gets rating color rgb code
     function getRatingColor(_rating) {
-        let color = "rgb(0, 118, 245)"; // rating more than 9 (default) - darkblue
+        let color = "rgb(102, 0, 255)"; // rating is 10 - purple
         if (_rating < 2) {
             color = "rgb(128, 0, 0)"; // rating less than 2 - darkred
         }
@@ -535,6 +735,9 @@ Quellen: -
         }
         else if (_rating < 9) {
             color = "rgb(0, 245, 204)"; // rating less than 9 - lightblue
+        }
+        else if (_rating < 10) {
+            color = "rgb(0, 118, 245)"; // rating more than 9 - darkblue
         }
         return color;
     }
