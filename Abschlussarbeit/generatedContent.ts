@@ -482,6 +482,10 @@ Quellen: -
 
         whippedCheck.checked = false;
 
+        if (creatingIcecream != null) {
+            creatingIcecream.changeWhipped(false);
+        }
+
         priceField.value = "";
 
         editingForm = false;
@@ -831,6 +835,7 @@ Quellen: -
             priceField.value = "" +  creatorIcecream.price;
 
             whippedCheck.checked = JSON.parse("" + creatorIcecream.whippedCream.valueOf()); // doesn't recognize it as a bool if not parsed
+            creatingIcecream.changeWhipped(whippedCheck.checked);
     
             // open create form in edit mode
             creatorDiv.setAttribute("style", "display: inline");

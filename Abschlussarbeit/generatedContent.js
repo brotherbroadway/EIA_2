@@ -393,6 +393,9 @@ Quellen: -
         setSelectedIndex(EIA2SoSe23_Abschlussarbeit.dropdownSauce, 0);
         setSelectedIndex(EIA2SoSe23_Abschlussarbeit.dropdownSprinkles, 0);
         EIA2SoSe23_Abschlussarbeit.whippedCheck.checked = false;
+        if (EIA2SoSe23_Abschlussarbeit.creatingIcecream != null) {
+            EIA2SoSe23_Abschlussarbeit.creatingIcecream.changeWhipped(false);
+        }
         EIA2SoSe23_Abschlussarbeit.priceField.value = "";
         EIA2SoSe23_Abschlussarbeit.editingForm = false;
         updateProductionCost(false);
@@ -664,6 +667,7 @@ Quellen: -
             setSelectedIndex(EIA2SoSe23_Abschlussarbeit.dropdownSprinkles, parseInt("" + EIA2SoSe23_Abschlussarbeit.creatorIcecream.sprinklesType) + 1);
             EIA2SoSe23_Abschlussarbeit.priceField.value = "" + EIA2SoSe23_Abschlussarbeit.creatorIcecream.price;
             EIA2SoSe23_Abschlussarbeit.whippedCheck.checked = JSON.parse("" + EIA2SoSe23_Abschlussarbeit.creatorIcecream.whippedCream.valueOf()); // doesn't recognize it as a bool if not parsed
+            EIA2SoSe23_Abschlussarbeit.creatingIcecream.changeWhipped(EIA2SoSe23_Abschlussarbeit.whippedCheck.checked);
             // open create form in edit mode
             EIA2SoSe23_Abschlussarbeit.creatorDiv.setAttribute("style", "display: inline");
             EIA2SoSe23_Abschlussarbeit.createNewBttn.innerHTML = "Reset";
