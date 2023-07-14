@@ -255,7 +255,7 @@ Quellen: -
                     }
 
                     this.frameCount--;
-                    this.updateRating(-0.0075);
+                    this.updateRating(-0.005);
 
                     this.checkShopStatus();
                     break;
@@ -442,7 +442,7 @@ Quellen: -
             if (_creamID == this.myIcecream.id && waffleCheck.checked === this.myIcecream.waffle) {
                 //console.log("YES THAT'S IT");
 
-                this.updateRating(this.rating * 0.1);
+                this.updateRating(1);
                 
                 // update status
                 if (this.checkSeats()) {
@@ -450,17 +450,17 @@ Quellen: -
                     this.myQueuePos = -1;
                     this.wasServed = true;
                     this.updateStatus(CustomerStatus.GoingToSeat);
-                    
-                    // update gain display
-                    moneyGainFrameCount = 12;
-                    myMoneyGain = this.myIcecream.cost;
-                    myMoneyCurrent += this.myIcecream.cost;
                 } else {
                     this.updateStatus(CustomerStatus.WaitingInside);
                 }
 
                 firstIcecream = false;
                 correctIcecream = true;
+
+                // update gain display
+                moneyGainFrameCount = 12;
+                myMoneyGain = this.myIcecream.cost;
+                myMoneyCurrent += this.myIcecream.cost;
                 
                 return true;
             } else {
