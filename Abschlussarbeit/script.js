@@ -244,7 +244,7 @@ Quellen: -
         EIA2SoSe23_Abschlussarbeit.crc2.fillStyle = fontColor;
         EIA2SoSe23_Abschlussarbeit.crc2.font = "bold " + (fontSize * 0.8) + "px Impact";
         EIA2SoSe23_Abschlussarbeit.crc2.textAlign = "center";
-        EIA2SoSe23_Abschlussarbeit.crc2.fillText(signText, signW * 0.5, signH * 0.725);
+        EIA2SoSe23_Abschlussarbeit.crc2.fillText(signText, signW * 0.5, signH * 0.775);
         EIA2SoSe23_Abschlussarbeit.crc2.restore();
     }
     // draws rating and bank display

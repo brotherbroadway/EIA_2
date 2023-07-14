@@ -280,7 +280,7 @@ Quellen: -
         crc2.fillStyle = fontColor;
         crc2.font = "bold " + (fontSize * 0.8) + "px Impact";
         crc2.textAlign = "center";
-        crc2.fillText(signText, signW * 0.5, signH * 0.725);
+        crc2.fillText(signText, signW * 0.5, signH * 0.775);
 
         crc2.restore();
     }
