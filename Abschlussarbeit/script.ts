@@ -461,6 +461,15 @@ Quellen: -
                     fullCreatorDiv.setAttribute("style", "display: none");
                     editServeBttn.setAttribute("style", "display: none");
                     deleteServeBttn.setAttribute("style", "display: none");
+
+                    if (createFormOpen) {
+                        resetCreatorFields();
+
+                        creatorDiv.setAttribute("style", "display: none");
+                        createNewBttn.innerHTML = "Create New";
+            
+                        createFormOpen = false;
+                    }
                 } else {
                     shopOpen = false;
 

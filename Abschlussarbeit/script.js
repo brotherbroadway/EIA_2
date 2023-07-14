@@ -402,6 +402,12 @@ Quellen: -
                     fullCreatorDiv.setAttribute("style", "display: none");
                     EIA2SoSe23_Abschlussarbeit.editServeBttn.setAttribute("style", "display: none");
                     EIA2SoSe23_Abschlussarbeit.deleteServeBttn.setAttribute("style", "display: none");
+                    if (EIA2SoSe23_Abschlussarbeit.createFormOpen) {
+                        EIA2SoSe23_Abschlussarbeit.resetCreatorFields();
+                        EIA2SoSe23_Abschlussarbeit.creatorDiv.setAttribute("style", "display: none");
+                        EIA2SoSe23_Abschlussarbeit.createNewBttn.innerHTML = "Create New";
+                        EIA2SoSe23_Abschlussarbeit.createFormOpen = false;
+                    }
                 }
                 else {
                     EIA2SoSe23_Abschlussarbeit.shopOpen = false;
