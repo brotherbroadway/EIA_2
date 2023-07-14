@@ -9,7 +9,7 @@ Datum: 06.07.2023
 Quellen: -
 */
     class Customer extends EIA2SoSe23_Abschlussarbeit.Moveable {
-        constructor(_posX, _posY, _speedX, _speedY, _id, _myIcecream, _scaling = 1, _mood = EIA2SoSe23_Abschlussarbeit.CustomerMood.Good, _status = EIA2SoSe23_Abschlussarbeit.CustomerStatus.Arriving, _rating = 10, _frameCount = -20, _mouthOpen = false, _selected = false, _myQueuePos = -3, _mySeatPos = -1) {
+        constructor(_posX, _posY, _speedX, _speedY, _id, _myIcecream, _scaling = 1, _mood = EIA2SoSe23_Abschlussarbeit.CustomerMood.Good, _status = EIA2SoSe23_Abschlussarbeit.CustomerStatus.Arriving, _rating = 10, _frameCount = -20, _mouthOpen = false, _selected = false, _myQueuePos = -3, _mySeatPos = -1, _wasServed = false) {
             super(_posX, _posY, _scaling);
             this.speedX = _speedX;
             this.speedY = _speedY;
@@ -23,6 +23,7 @@ Quellen: -
             this.selected = _selected;
             this.myQueuePos = _myQueuePos;
             this.mySeatPos = _mySeatPos;
+            this.wasServed = _wasServed;
         }
         draw() {
             // scales customer depending on screen position
@@ -146,6 +147,7 @@ Quellen: -
             switch (this.status) {
                 case EIA2SoSe23_Abschlussarbeit.CustomerStatus.Arriving:
                     this.arrive();
+                    this.checkShopStatus();
                     break;
                 case EIA2SoSe23_Abschlussarbeit.CustomerStatus.WaitingOutside:
                     // checks if queue is free every 20 frames
@@ -161,13 +163,16 @@ Quellen: -
                         this.updateStatus(EIA2SoSe23_Abschlussarbeit.CustomerStatus.Reviewing);
                     }
                     this.paceOutside();
+                    this.checkShopStatus();
                     break;
                 case EIA2SoSe23_Abschlussarbeit.CustomerStatus.GoingToQueue:
                     this.frameCount = -20;
                     this.goToQueue();
+                    this.checkShopStatus();
                     break;
                 case EIA2SoSe23_Abschlussarbeit.CustomerStatus.AskingForIcecream:
                     this.updateRating(-0.0175);
+                    this.checkShopStatus();
                     break;
                 case EIA2SoSe23_Abschlussarbeit.CustomerStatus.WaitingInside:
                     // drawing icecream in hand
@@ -180,20 +185,27 @@ Quellen: -
                         }
                         else {
                             EIA2SoSe23_Abschlussarbeit.waitingPosTaken[this.myQueuePos] = -1;
+                            this.myQueuePos = -1;
+                            this.wasServed = true;
                             this.updateStatus(EIA2SoSe23_Abschlussarbeit.CustomerStatus.GoingToSeat);
                         }
                     }
                     // eat toppings by frame count inside (still losing rating if not seated)
                     if (this.frameCount < 0) {
                         this.frameCount = 140;
-                        // when fully eaten, update status (leave)
-                        if (this.myIcecream.eatTopping()) {
-                            EIA2SoSe23_Abschlussarbeit.waitingPosTaken[this.myQueuePos] = -1;
-                            this.updateStatus(EIA2SoSe23_Abschlussarbeit.CustomerStatus.Leaving);
+                        if (this.wasServed === true) {
+                            // when fully eaten, update status (leave)
+                            if (this.myIcecream.eatTopping()) {
+                                EIA2SoSe23_Abschlussarbeit.waitingPosTaken[this.myQueuePos] = -1;
+                                this.myQueuePos = -1;
+                                this.updateStatus(EIA2SoSe23_Abschlussarbeit.CustomerStatus.Leaving);
+                            }
                         }
+                        this.wasServed = true;
                     }
                     this.frameCount--;
                     this.updateRating(-0.0075);
+                    this.checkShopStatus();
                     break;
                 case EIA2SoSe23_Abschlussarbeit.CustomerStatus.GoingToSeat:
                     // drawing icecream in hand
@@ -214,7 +226,13 @@ Quellen: -
                     this.frameCount--;
                     // eat toppings by frame count
                     if (this.frameCount < 0) {
-                        this.frameCount = EIA2SoSe23_Abschlussarbeit.getRandomNumber(120, 90);
+                        let upperLimit = 120;
+                        let lowerLimit = 90;
+                        if (!EIA2SoSe23_Abschlussarbeit.shopOpen) {
+                            upperLimit *= 0.5;
+                            lowerLimit *= 0.5;
+                        }
+                        this.frameCount = EIA2SoSe23_Abschlussarbeit.getRandomNumber(upperLimit, lowerLimit);
                         // when fully eaten, update status (leave)
                         if (this.myIcecream.eatTopping()) {
                             EIA2SoSe23_Abschlussarbeit.seatTaken[this.mySeatPos] = false;
@@ -322,7 +340,20 @@ Quellen: -
             }
             else {
                 delete EIA2SoSe23_Abschlussarbeit.allCustomers[this.id]; // using splice caused weird side effects
-                console.log("Removed Customer X: " + Math.floor(this.posX) + ", Y: " + Math.floor(this.posY));
+                if (this.wasServed === true) {
+                    if (this.rating < 1) {
+                        this.rating = 1;
+                    }
+                    else if (this.rating > 10) {
+                        this.rating = 10;
+                    }
+                    EIA2SoSe23_Abschlussarbeit.myRatingTotal += this.rating;
+                    EIA2SoSe23_Abschlussarbeit.myRatingCount++;
+                    console.log("Customer left (Rating: " + Math.floor(this.rating * 10) / 10 + "/10)");
+                }
+                else {
+                    console.log("Customer left (no rating)");
+                }
             }
         }
         // walks around outside and loses rating while queue is occupied
@@ -338,25 +369,35 @@ Quellen: -
             this.frameCount--;
         }
         // tries to give icecream to customer
-        giveIceream(_creamID) {
+        giveIcecream(_creamID) {
             this.selected = false;
             EIA2SoSe23_Abschlussarbeit.waitingSelectedID = -2;
             if (_creamID == this.myIcecream.id && EIA2SoSe23_Abschlussarbeit.waffleCheck.checked === this.myIcecream.waffle) {
-                console.log("YES THAT'S IT");
-                this.updateRating(1);
+                //console.log("YES THAT'S IT");
+                this.updateRating(this.rating * 0.1);
                 // update status
                 if (this.checkSeats()) {
                     EIA2SoSe23_Abschlussarbeit.waitingPosTaken[this.myQueuePos] = -1;
+                    this.myQueuePos = -1;
+                    this.wasServed = true;
                     this.updateStatus(EIA2SoSe23_Abschlussarbeit.CustomerStatus.GoingToSeat);
+                    // update gain display
+                    EIA2SoSe23_Abschlussarbeit.moneyGainFrameCount = 12;
+                    EIA2SoSe23_Abschlussarbeit.myMoneyGain = this.myIcecream.cost;
+                    EIA2SoSe23_Abschlussarbeit.myMoneyCurrent += this.myIcecream.cost;
                 }
                 else {
                     this.updateStatus(EIA2SoSe23_Abschlussarbeit.CustomerStatus.WaitingInside);
                 }
+                EIA2SoSe23_Abschlussarbeit.firstIcecream = false;
+                EIA2SoSe23_Abschlussarbeit.correctIcecream = true;
                 return true;
             }
             else {
                 this.updateRating(-3);
-                console.log("NO I DON'T WANT THAT");
+                EIA2SoSe23_Abschlussarbeit.firstIcecream = false;
+                EIA2SoSe23_Abschlussarbeit.correctIcecream = false;
+                //console.log("NO I DON'T WANT THAT");
             }
             return false;
         }
@@ -366,11 +407,11 @@ Quellen: -
                 if (EIA2SoSe23_Abschlussarbeit.seatTaken[i] != true) {
                     EIA2SoSe23_Abschlussarbeit.seatTaken[i] = true;
                     this.mySeatPos = i;
-                    console.log("SEAT FREE");
+                    //console.log("SEAT FREE");
                     return true;
                 }
             }
-            console.log("NO SEAT FREE");
+            //console.log("NO SEAT FREE");
             return false;
         }
         // checks if a queue spot if free (to ask for icecream)
@@ -380,11 +421,11 @@ Quellen: -
                     EIA2SoSe23_Abschlussarbeit.waitingPosTaken[i] = this.id;
                     this.updateStatus(EIA2SoSe23_Abschlussarbeit.CustomerStatus.GoingToQueue);
                     this.myQueuePos = i;
-                    console.log("Queue available");
+                    //console.log("Queue available");
                     return true;
                 }
             }
-            console.log("Queue NOT available");
+            //console.log("Queue NOT available");
             return false;
         }
         // update mood depending on inner rating
@@ -399,6 +440,19 @@ Quellen: -
                 this.mood = EIA2SoSe23_Abschlussarbeit.CustomerMood.Good;
             }
         }
+        // leave if shop is closed
+        checkShopStatus() {
+            if (!EIA2SoSe23_Abschlussarbeit.shopOpen) {
+                this.status = EIA2SoSe23_Abschlussarbeit.CustomerStatus.Leaving;
+                // if in queue, leave queue
+                if (this.myQueuePos >= 0) {
+                    EIA2SoSe23_Abschlussarbeit.waitingPosTaken[this.myQueuePos] = -1;
+                    this.myQueuePos = -1;
+                    this.updateRating(-4.2);
+                    console.log("Kicked out");
+                }
+            }
+        }
         // updates status
         updateStatus(_newStatus) {
             this.status = _newStatus;
@@ -406,9 +460,6 @@ Quellen: -
         // updates rating
         updateRating(_change) {
             this.rating += _change;
-            if (this.rating < 0) {
-                this.rating = 0;
-            }
         }
     }
     EIA2SoSe23_Abschlussarbeit.Customer = Customer;

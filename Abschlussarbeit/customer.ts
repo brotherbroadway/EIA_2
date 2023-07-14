@@ -19,8 +19,9 @@ Quellen: -
         public selected: boolean;
         private myQueuePos: number;
         private mySeatPos: number;
+        private wasServed: boolean;
 
-        public constructor(_posX: number, _posY: number, _speedX: number, _speedY: number, _id: number, _myIcecream: DisplayIcecream, _scaling: number = 1, _mood: CustomerMood = CustomerMood.Good, _status: CustomerStatus = CustomerStatus.Arriving, _rating: number = 10, _frameCount: number = -20, _mouthOpen: boolean = false, _selected: boolean = false, _myQueuePos: number = -3, _mySeatPos: number = -1) {
+        public constructor(_posX: number, _posY: number, _speedX: number, _speedY: number, _id: number, _myIcecream: DisplayIcecream, _scaling: number = 1, _mood: CustomerMood = CustomerMood.Good, _status: CustomerStatus = CustomerStatus.Arriving, _rating: number = 10, _frameCount: number = -20, _mouthOpen: boolean = false, _selected: boolean = false, _myQueuePos: number = -3, _mySeatPos: number = -1, _wasServed: boolean = false) {
             super(_posX, _posY, _scaling);
 
             this.speedX = _speedX;
@@ -35,6 +36,7 @@ Quellen: -
             this.selected = _selected;
             this.myQueuePos = _myQueuePos;
             this.mySeatPos = _mySeatPos;
+            this.wasServed = _wasServed;
         }
 
         public draw(): void {
@@ -187,6 +189,8 @@ Quellen: -
             switch (this.status) {
                 case CustomerStatus.Arriving:
                     this.arrive();
+
+                    this.checkShopStatus();
                     break;
                 case CustomerStatus.WaitingOutside:
                     // checks if queue is free every 20 frames
@@ -201,13 +205,19 @@ Quellen: -
                     }
 
                     this.paceOutside();
+
+                    this.checkShopStatus();
                     break;
                 case CustomerStatus.GoingToQueue:
                     this.frameCount = -20;
                     this.goToQueue();
+
+                    this.checkShopStatus();
                     break;
                 case CustomerStatus.AskingForIcecream:
                     this.updateRating(-0.0175);
+
+                    this.checkShopStatus();
                     break;
                 case CustomerStatus.WaitingInside:
                     // drawing icecream in hand
@@ -222,6 +232,8 @@ Quellen: -
 
                         } else {
                             waitingPosTaken[this.myQueuePos] = -1;
+                            this.myQueuePos = -1;
+                            this.wasServed = true;
                             this.updateStatus(CustomerStatus.GoingToSeat);
                         }
                     }
@@ -230,16 +242,22 @@ Quellen: -
                     if (this.frameCount < 0) {
                         this.frameCount = 140;
 
-                        // when fully eaten, update status (leave)
-                        if (this.myIcecream.eatTopping()) {
-                            waitingPosTaken[this.myQueuePos] = -1;
-                            this.updateStatus(CustomerStatus.Leaving);
+                        if (this.wasServed === true) {
+                            // when fully eaten, update status (leave)
+                            if (this.myIcecream.eatTopping()) {
+                                waitingPosTaken[this.myQueuePos] = -1;
+                                this.myQueuePos = -1;
+                                this.updateStatus(CustomerStatus.Leaving);
+                            }
                         }
+
+                        this.wasServed = true;
                     }
 
                     this.frameCount--;
                     this.updateRating(-0.0075);
 
+                    this.checkShopStatus();
                     break;
                 case CustomerStatus.GoingToSeat:
                     // drawing icecream in hand
@@ -262,7 +280,15 @@ Quellen: -
 
                     // eat toppings by frame count
                     if (this.frameCount < 0) {
-                        this.frameCount = getRandomNumber(120, 90);
+                        let upperLimit: number = 120;
+                        let lowerLimit: number = 90;
+
+                        if (!shopOpen) {
+                            upperLimit *= 0.5;
+                            lowerLimit *= 0.5;
+                        }
+
+                        this.frameCount = getRandomNumber(upperLimit, lowerLimit);
 
                         // when fully eaten, update status (leave)
                         if (this.myIcecream.eatTopping()) {
@@ -377,7 +403,20 @@ Quellen: -
             } else {
                 delete allCustomers[this.id]; // using splice caused weird side effects
 
-                console.log("Removed Customer X: " + Math.floor(this.posX) + ", Y: " + Math.floor(this.posY));
+                if (this.wasServed === true) {
+                    if (this.rating < 1) {
+                        this.rating = 1;
+                    } else if (this.rating > 10) {
+                        this.rating = 10;
+                    }
+
+                    myRatingTotal += this.rating;
+                    myRatingCount++;
+
+                    console.log("Customer left (Rating: " + Math.floor(this.rating * 10) / 10 +"/10)");
+                } else {
+                    console.log("Customer left (no rating)");
+                }
             }
         }
 
@@ -396,28 +435,40 @@ Quellen: -
         }
 
         // tries to give icecream to customer
-        public giveIceream(_creamID: string): boolean {
+        public giveIcecream(_creamID: string): boolean {
             this.selected = false;
             waitingSelectedID = -2;
 
             if (_creamID == this.myIcecream.id && waffleCheck.checked === this.myIcecream.waffle) {
-                console.log("YES THAT'S IT");
+                //console.log("YES THAT'S IT");
 
-                this.updateRating(1);
+                this.updateRating(this.rating * 0.1);
                 
                 // update status
                 if (this.checkSeats()) {
                     waitingPosTaken[this.myQueuePos] = -1;
+                    this.myQueuePos = -1;
+                    this.wasServed = true;
                     this.updateStatus(CustomerStatus.GoingToSeat);
+                    
+                    // update gain display
+                    moneyGainFrameCount = 12;
+                    myMoneyGain = this.myIcecream.cost;
+                    myMoneyCurrent += this.myIcecream.cost;
                 } else {
                     this.updateStatus(CustomerStatus.WaitingInside);
                 }
+
+                firstIcecream = false;
+                correctIcecream = true;
                 
                 return true;
             } else {
                 this.updateRating(-3);
 
-                console.log("NO I DON'T WANT THAT");
+                firstIcecream = false;
+                correctIcecream = false;
+                //console.log("NO I DON'T WANT THAT");
             }
 
             return false;
@@ -431,12 +482,12 @@ Quellen: -
 
                     this.mySeatPos = i;
 
-                    console.log("SEAT FREE");
+                    //console.log("SEAT FREE");
                     return true;
                 }
             }
 
-            console.log("NO SEAT FREE");
+            //console.log("NO SEAT FREE");
             return false;
         }
 
@@ -449,12 +500,12 @@ Quellen: -
                     this.updateStatus(CustomerStatus.GoingToQueue);
                     this.myQueuePos = i;
 
-                    console.log("Queue available");
+                    //console.log("Queue available");
                     return true;
                 }
             }
 
-            console.log("Queue NOT available");
+            //console.log("Queue NOT available");
             return false;
         }
 
@@ -469,6 +520,22 @@ Quellen: -
             }
         }
 
+        // leave if shop is closed
+        private checkShopStatus(): void {
+            if (!shopOpen) {
+                this.status = CustomerStatus.Leaving;
+
+                // if in queue, leave queue
+                if (this.myQueuePos >= 0) {
+                    waitingPosTaken[this.myQueuePos] = -1;
+                    this.myQueuePos = -1;
+
+                    this.updateRating(-4.2);
+                    console.log("Kicked out");
+                }
+            }
+        }
+
         // updates status
         private updateStatus(_newStatus: CustomerStatus): void {
             this.status = _newStatus;
@@ -477,10 +544,6 @@ Quellen: -
         // updates rating
         private updateRating(_change: number): void {
             this.rating += _change;
-
-            if (this.rating < 0) {
-                this.rating = 0;
-            }
         }
     }
 }
