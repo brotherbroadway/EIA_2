@@ -236,7 +236,7 @@ Quellen: -
         }
         else {
             prepIcecream = JSON.parse(JSON.stringify(EIA2SoSe23_Abschlussarbeit.savedCreams[_displayID]));
-            console.log("prepcream:", prepIcecream.title);
+            //console.log("prepcream:", prepIcecream.title);
             // get toppin colors
             theseToppings = JSON.parse(prepIcecream.toppings);
             for (let i = 0; i < prepIcecream.toppingsAmount; i++) {
@@ -260,7 +260,7 @@ Quellen: -
             thisID = prepIcecream.id;
         }
         let thisDisplayIcecream = new EIA2SoSe23_Abschlussarbeit.DisplayIcecream(_posX, _posY, colorToppings, colorSauce, colorSprinkles, hasWhipped, hasWaffle, thisPrice, thisID);
-        console.log("DisplayIcecream:", prepIcecream.title, colorToppings, colorSauce, colorSprinkles, hasWhipped, hasWaffle, thisPrice, thisID);
+        //console.log("DisplayIcecream:", prepIcecream.title, colorToppings, colorSauce, colorSprinkles, hasWhipped, hasWaffle, thisPrice, thisID);  
         return thisDisplayIcecream;
     }
     EIA2SoSe23_Abschlussarbeit.getDisplayIcecream = getDisplayIcecream;
@@ -289,11 +289,11 @@ Quellen: -
         else { // update price & production values when something is selected
             EIA2SoSe23_Abschlussarbeit.previewVisible = true;
             if (EIA2SoSe23_Abschlussarbeit.previewServeIcecream != null && EIA2SoSe23_Abschlussarbeit.waffleCheck.checked != EIA2SoSe23_Abschlussarbeit.previewServeIcecream.waffle) {
-                console.log("Waffle change");
+                //console.log("Waffle change")
                 EIA2SoSe23_Abschlussarbeit.previewServeIcecream.waffle = EIA2SoSe23_Abschlussarbeit.waffleCheck.checked;
             }
             else {
-                console.log("Index", creamIndex, "Cream:", EIA2SoSe23_Abschlussarbeit.savedCreams[creamIndex].title);
+                //console.log("Index", creamIndex, "Cream:", savedCreams[creamIndex].title);
                 EIA2SoSe23_Abschlussarbeit.previewServeIcecream = getDisplayIcecream(EIA2SoSe23_Abschlussarbeit.canvasW * 0.5, EIA2SoSe23_Abschlussarbeit.canvasH * 0.95, false, creamIndex);
             }
             // updating price value
@@ -579,8 +579,12 @@ Quellen: -
     function clickServeButton(_event) {
         console.log("Click Serve Button ID:", EIA2SoSe23_Abschlussarbeit.dropdownServe.selectedIndex, "Waffle?:", EIA2SoSe23_Abschlussarbeit.waffleCheck.checked);
         if (EIA2SoSe23_Abschlussarbeit.dropdownServe.selectedIndex != 0 && EIA2SoSe23_Abschlussarbeit.waitingSelectedID >= 0) {
+            // remove money from bank
+            EIA2SoSe23_Abschlussarbeit.moneyReductionFrameCount = 12;
+            EIA2SoSe23_Abschlussarbeit.myMoneyReduction = EIA2SoSe23_Abschlussarbeit.currentSelectedProdCost;
+            EIA2SoSe23_Abschlussarbeit.myMoneyCurrent -= EIA2SoSe23_Abschlussarbeit.currentSelectedProdCost;
             // give it to customer
-            EIA2SoSe23_Abschlussarbeit.allCustomers[EIA2SoSe23_Abschlussarbeit.waitingSelectedID].giveIceream(EIA2SoSe23_Abschlussarbeit.savedCreams[(EIA2SoSe23_Abschlussarbeit.dropdownServe.selectedIndex - 1)].id);
+            EIA2SoSe23_Abschlussarbeit.allCustomers[EIA2SoSe23_Abschlussarbeit.waitingSelectedID].giveIcecream(EIA2SoSe23_Abschlussarbeit.savedCreams[(EIA2SoSe23_Abschlussarbeit.dropdownServe.selectedIndex - 1)].id);
             setSelectedIndex(EIA2SoSe23_Abschlussarbeit.dropdownServe, 0);
             //waffleCheck.checked = false;
             // closes create form

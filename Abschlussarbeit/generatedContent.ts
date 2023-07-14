@@ -280,7 +280,7 @@ Quellen: -
         } else {
             prepIcecream = JSON.parse(JSON.stringify(savedCreams[_displayID]));
 
-            console.log("prepcream:", prepIcecream.title);
+            //console.log("prepcream:", prepIcecream.title);
 
             // get toppin colors
             theseToppings = JSON.parse(prepIcecream.toppings);
@@ -315,7 +315,7 @@ Quellen: -
         let thisDisplayIcecream = new DisplayIcecream(_posX, _posY,
             colorToppings, colorSauce, colorSprinkles, hasWhipped, hasWaffle, thisPrice, thisID);
 
-        console.log("DisplayIcecream:", prepIcecream.title, colorToppings, colorSauce, colorSprinkles, hasWhipped, hasWaffle, thisPrice, thisID);  
+        //console.log("DisplayIcecream:", prepIcecream.title, colorToppings, colorSauce, colorSprinkles, hasWhipped, hasWaffle, thisPrice, thisID);  
 
         return thisDisplayIcecream;
     }
@@ -352,10 +352,10 @@ Quellen: -
             previewVisible = true;
 
             if (previewServeIcecream != null && waffleCheck.checked != previewServeIcecream.waffle) {
-                console.log("Waffle change")
+                //console.log("Waffle change")
                 previewServeIcecream.waffle = waffleCheck.checked;
             } else {
-                console.log("Index", creamIndex, "Cream:", savedCreams[creamIndex].title);
+                //console.log("Index", creamIndex, "Cream:", savedCreams[creamIndex].title);
                 previewServeIcecream = getDisplayIcecream(canvasW * 0.5, canvasH * 0.95, false, creamIndex);
             }
 
@@ -724,8 +724,13 @@ Quellen: -
         console.log("Click Serve Button ID:", dropdownServe.selectedIndex, "Waffle?:", waffleCheck.checked);
 
         if (dropdownServe.selectedIndex != 0 && waitingSelectedID >= 0) {
+            // remove money from bank
+            moneyReductionFrameCount = 12;
+            myMoneyReduction = currentSelectedProdCost;
+            myMoneyCurrent -= currentSelectedProdCost;
+
             // give it to customer
-            allCustomers[waitingSelectedID].giveIceream(savedCreams[(dropdownServe.selectedIndex - 1)].id);
+            allCustomers[waitingSelectedID].giveIcecream(savedCreams[(dropdownServe.selectedIndex - 1)].id);
 
             setSelectedIndex(dropdownServe, 0);
 
