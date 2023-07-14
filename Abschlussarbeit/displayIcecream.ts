@@ -12,7 +12,7 @@ Quellen: -
         private sprinklesColor: string;
         private whipped: boolean;
         public waffle: boolean;
-        private cost: number;
+        public cost: number;
         public id: string;
 
         public constructor(_posX: number, _posY: number, _toppingColors: string[],
