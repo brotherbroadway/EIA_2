@@ -22,27 +22,31 @@
     </div>
     
     <div id="selectioncontainer">
-        <div id="servecontainer">
+        <div class="outerdiv" id="servecontainer">
             <h3>Serve Icecreams</h3>
-            <button id="serveeditbutton">EDIT</button>
-            <button id="servedeletebutton">X</button>
-            <div class="dropdowndiv" id="dropdowndivserve">
-                <form id="serveform" method="get">
-                    <select class="dropdownselect" id="dropdownserve" name="servecream">
-                        <option value="" disabled selected hidden>Select an Icecream</option>
-                    </select>
-                    <input type="checkbox" class="checkclass" id="wafflecheck" name="wafflecheck" value="editing">
-                    <label for="wafflecheck" id="wafflelabel">Waffle</label>
-                </form>
-                <p id="pricepreview"></p>
-                <p id="priceprodpreview"></p>
-                <button class="submitbutton" id="servebutton" type="button" form="serveform">Serve</button>
+            <div class="innerservediv">
+                <button id="servedeletebutton">X</button>
+                <button id="serveeditbutton">EDIT</button>
+                <div class="dropdowndiv" id="dropdowndivserve">
+                    <form id="serveform" method="get">
+                        <select class="dropdownselect" id="dropdownserve" name="servecream">
+                            <option value="" disabled selected hidden>Select an Icecream</option>
+                        </select>
+                        <label class="checktypes" id="wafflelabel">
+                            <input type="checkbox" class="checkclass" id="wafflecheck" name="wafflecheck" value="editing">
+                            <span class="spanmark">Waffle</span>
+                        </label>
+                    </form>
+                </div>
             </div>
+            <p id="pricepreview"></p>
+            <p id="priceprodpreview"></p>
+            <button class="submitbutton" id="servebutton" type="button" form="serveform">Serve</button>
         </div>
 
-        <div id="creatorcontainer">
+        <div class="outerdiv" id="creatorcontainer">
             <h3>Create Icecreams</h3>
-            <button id="createnewbutton">Create New</button>
+            <button class="submitbutton" id="createnewbutton">Create New</button>
             <div id="creatordiv">
                 <form id="creatorform" method="get">
                     <input type="text" id="creamtitle" name="title" placeholder="Name">
@@ -66,6 +70,7 @@
                             <option value="Banana">Banana</option>
                             <option value="Smurf">Smurf</option>
                         </select>
+                        <br>
                         <select class="dropdownselect" id="dropdowncream2" name="toppings">
                             <option value="" disabled selected hidden>Select a Topping</option>
                             <option value="Chocolate">Chocolate</option>
@@ -75,11 +80,10 @@
                             <option value="Banana">Banana</option>
                             <option value="Smurf">Smurf</option>
                         </select>
-                    </div>
-
-                    <div>
-                        <button id="addcreambutton" type="button">+</button>
-                        <button id="removecreambutton" type="button">-</button>
+                        <div>
+                            <button class="toppingbutton" id="addcreambutton" type="button">+</button>
+                            <button class="toppingbutton" id="removecreambutton" type="button">-</button>
+                        </div>
                     </div>
                     
                     <div>
@@ -101,8 +105,10 @@
                         </select>
                     </div>
                     
-                    <input type="checkbox" class="checkclass" id="whippedcheck" name="whippedCream" value="whippedCream">
-                    <label for="whippedcheck" id="whippedlabel">Whipped Cream</label>
+                    <label class="checktypes" id="whippedlabel">
+                        <input type="checkbox" class="checkclass" id="whippedcheck" name="whippedCream" value="whippedCream">
+                        <span class="spanmark">Whipped Cream</span>
+                    </label>
                     <p id="creatorpricepara">$ <input type="number" id="creatorprice" name="price" placeholder="Price"></p>
                 </form>
                 <p id="creatorpriceprod"></p>
