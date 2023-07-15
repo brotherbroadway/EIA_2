@@ -301,8 +301,8 @@ Quellen: -
         }
         else { // update price & production values when something is selected
             EIA2SoSe23_Abschlussarbeit.previewVisible = true;
-            if (EIA2SoSe23_Abschlussarbeit.previewServeIcecream != null && EIA2SoSe23_Abschlussarbeit.waffleCheck.checked != EIA2SoSe23_Abschlussarbeit.previewServeIcecream.waffle) {
-                //console.log("Waffle change")
+            if (EIA2SoSe23_Abschlussarbeit.previewServeIcecream != null && EIA2SoSe23_Abschlussarbeit.waffleCheck.checked != EIA2SoSe23_Abschlussarbeit.previewServeIcecream.waffle && EIA2SoSe23_Abschlussarbeit.savedCreams[creamIndex].id == EIA2SoSe23_Abschlussarbeit.previewServeIcecream.id) {
+                //console.log("Waffle change");
                 EIA2SoSe23_Abschlussarbeit.previewServeIcecream.waffle = EIA2SoSe23_Abschlussarbeit.waffleCheck.checked;
             }
             else {

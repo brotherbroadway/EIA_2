@@ -370,8 +370,8 @@ Quellen: -
         } else { // update price & production values when something is selected
             previewVisible = true;
 
-            if (previewServeIcecream != null && waffleCheck.checked != previewServeIcecream.waffle) {
-                //console.log("Waffle change")
+            if (previewServeIcecream != null && waffleCheck.checked != previewServeIcecream.waffle && savedCreams[creamIndex].id == previewServeIcecream.id) {
+                //console.log("Waffle change");
                 previewServeIcecream.waffle = waffleCheck.checked;
             } else {
                 //console.log("Index", creamIndex, "Cream:", savedCreams[creamIndex].title);
