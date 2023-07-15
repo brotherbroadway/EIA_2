@@ -144,6 +144,7 @@ h3 {
 }
 
 #creamtitle {
+    width: 70%;
     margin-top: 10px;
     margin-bottom: 10px;
 }
@@ -279,4 +280,8 @@ select:hover {
     color: rgb(59, 112, 145);
     font-weight: bold;
     text-shadow: -0.5px -0.5px 0 white, 0.5px -0.5px 0 white, -0.5px 0.5px 0 white, 0.5px 0.5px 0 white;
+}
+
+#creatorprice {
+    width: 33%;
 }
