@@ -86,6 +86,9 @@ Quellen: -
     export let correctIcecream: boolean = true;
     let customerWaiting: boolean = false;
     let lastInstructionCount: number = 25;
+    let framesSinceLastSpawn: number = 0;
+    let frameSinceShopOpen: number = 0;
+    let spawnedFirstCustomer: boolean = false;
 
     // element bools and others
     export let createFormOpen: boolean = false;
@@ -135,9 +138,9 @@ Quellen: -
     window.addEventListener("load", handleLoad);
 
     async function handleLoad(): Promise<void> {
-        await installListeners();
-
         drawEverything();
+        
+        await installListeners();
     }
 
     // handles drawn visuals
@@ -170,8 +173,6 @@ Quellen: -
 
         canvas.removeEventListener("click", clickCanvas);
         canvas.addEventListener("click", clickCanvas);
-
-        //spawnNewCustomer();
 
         // THE ANIMATION
         animationInterval = setInterval(drawAnimated, 100);
@@ -230,10 +231,36 @@ Quellen: -
         })
 
         // spawn new one
-        if (shopOpen && Math.random() < 0.1 && customerCount < 10 && savedCreams.length > 0) {
-            console.log("Spawned new customer");
-            spawnNewCustomer();
+        let spawnChance: number = 0.012 * getSpendAmount();
+
+        //console.log("Chance", Math.floor(spawnChance * 1000) / 10);
+
+        if (shopOpen) {
+            // always spawn one customer at a certain point
+            if (frameSinceShopOpen < 0) {
+                spawnNewCustomer();
+
+                frameSinceShopOpen = 9001;
+            } else {
+                // check - if instructions aren't visible anymore,
+                //       - spawn since last frame,
+                //       - random spawn chance,
+                //       - if there's any icecream even available,
+                //       - and how many customers there are total
+                if (lastInstructionCount < 20 && framesSinceLastSpawn < 0 && Math.random() < spawnChance && savedCreams.length > 0 && customerCount < 13) {
+                    console.log("Spawned new customer");
+                    spawnNewCustomer();
+        
+                    framesSinceLastSpawn = 20;
+                }
+
+                frameSinceShopOpen--;
+            }
         }
+
+        framesSinceLastSpawn--;
+
+        //console.log(frameSinceShopOpen, framesSinceLastSpawn, lastInstructionCount);
     }
 
     // spawns new customer
@@ -241,11 +268,38 @@ Quellen: -
         // get random spawn height, speed, icecream, waffle
         let randomH: number = getRandomNumber(canvasH * 0.875, horizon + canvasH * 0.05);
         let randomSpeed: number = getRandomNumber(canvasW * 0.015, canvasW * 0.01);
-        let randomIceNum: number = Math.floor(Math.random() * savedCreams.length);
         let randomWaffle: number = getRandomNumber(2);
-        let randomIcecream: DisplayIcecream = getDisplayIcecream(0, 0, false, randomIceNum, randomWaffle);
 
-        let newCustomer = new Customer(spawnX, randomH, randomSpeed, randomSpeed * 0.5, allCustomers.length, randomIcecream);
+
+        // get what customer is willing to spend
+        let willingToSpend: number[] = [];
+
+        let moneyWillingToSpend: number = getSpendAmount();
+
+        // add icecreams that cost less than what they're willing to spend to selection they choose from
+        for (let i: number = 0; i < savedCreamsAmount; i++) {
+            if (spendList[i] < moneyWillingToSpend) {
+                willingToSpend.push(i);
+            }
+        }
+
+        // check if they have icecreams within that selection to choose from
+        let iceWillingToSpend: number = Math.floor(Math.random() * willingToSpend.length);
+        let randomIcecream: DisplayIcecream;
+        let tooExpensive: boolean = false;
+
+        // get dummy icecream & set too expensive bool
+        if (willingToSpend.length < 1) { 
+            tooExpensive = true;
+            randomIcecream = getDisplayIcecream(0, 0, false, 0, randomWaffle);
+        } else {
+            // get real icecream if there's one within pricerange available
+            randomIcecream = getDisplayIcecream(0, 0, false, willingToSpend[iceWillingToSpend], randomWaffle);
+        }
+
+        //console.log("Money I'm Willing To Spend", moneyWillingToSpend, willingToSpend, tooExpensive);
+
+        let newCustomer = new Customer(spawnX, randomH, randomSpeed, randomSpeed * 0.5, allCustomers.length, randomIcecream, tooExpensive);
         allCustomers.push(newCustomer);
     }
 
@@ -364,7 +418,7 @@ Quellen: -
 
     // checks if there's any instructions to draw
     function checkInstructions(): void {
-        if (lastInstructionCount > 0) {
+        if (lastInstructionCount >= 0) {
             // first open text
             if (firstOpen) {
                 let openText: string = "Click on the sign to open the shop!";
@@ -377,11 +431,11 @@ Quellen: -
                 drawInstructions(serveText);
             } else if (firstIcecream && !firstServe && customerWaiting) {
                 // first icecream serving text
-                let iceText: string = "Now select the correct icecream";
+                let iceText: string = "Now select the icecream they want";
                 let iceText2: string = "from your list to serve them!";
 
                 drawInstructions(iceText, iceText2);
-            } else if (!firstIcecream && !firstServe && customerWaiting) {
+            } else if (!firstIcecream && !firstServe) {
                 // right/wrong serving text
                 let correctText: string = "Nice one!";
                 let correctText2: string = "Keep it up!";
@@ -453,9 +507,13 @@ Quellen: -
             }
             if (mouseX > signPosX && mouseX < (signPosX + signW * 1.02) && mouseY > signPosY && mouseY < (signPosY + signH * 1.15)) {
                 // click shop sign
+                console.log("Opened shop!");
+
                 if (!shopOpen) {
                     shopOpen = true;
                     firstOpen = false;
+                    frameSinceShopOpen = 10;
+                    framesSinceLastSpawn = 50;
 
                     // hide creator div, edit, delete elements
                     fullCreatorDiv.setAttribute("style", "display: none");
@@ -471,6 +529,8 @@ Quellen: -
                         createFormOpen = false;
                     }
                 } else {
+                    console.log("Closed shop!");
+
                     shopOpen = false;
 
                     // show creator div, edit, delete elements
@@ -484,7 +544,7 @@ Quellen: -
 
     // selects customer at the spot (if there's one there)
     function selectCustomer(_waitPos: number): void {
-        console.log("CLICKED WAITING POS " + (_waitPos + 1));
+        //console.log("CLICKED WAITING POS " + (_waitPos + 1));
 
         // get wait pos selected if it's occupied & correct status
         if (waitingPosTaken[_waitPos] >= 0 && waitingPosTaken[_waitPos] != waitingSelectedID
@@ -742,6 +802,19 @@ Quellen: -
     // get random true or false
     export function getRandomBool(): boolean {
         return Boolean(Math.round(Math.random()));
+    }
+
+    // get how much money customer is willing to spend
+    function getSpendAmount(): number {
+        let baseWilling: number = getRandomNumber(230, 170) / 100;
+        let percentage: number = (myRatingCurrent / 10 - 0.5);
+
+        // modifier below 0 is less strong
+        if (percentage < 0) {
+            return baseWilling * (1 + percentage * 0.75);
+        } else {
+            return baseWilling * (1 + percentage * 2);
+        }
     }
 
     // gets an icecream topping (or sauce) color rgb code

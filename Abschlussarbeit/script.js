@@ -86,6 +86,9 @@ Quellen: -
     EIA2SoSe23_Abschlussarbeit.correctIcecream = true;
     let customerWaiting = false;
     let lastInstructionCount = 25;
+    let framesSinceLastSpawn = 0;
+    let frameSinceShopOpen = 0;
+    let spawnedFirstCustomer = false;
     // element bools and others
     EIA2SoSe23_Abschlussarbeit.createFormOpen = false;
     EIA2SoSe23_Abschlussarbeit.editingForm = false;
@@ -131,8 +134,8 @@ Quellen: -
     window.addEventListener("load", handleLoad);
     function handleLoad() {
         return __awaiter(this, void 0, void 0, function* () {
-            yield EIA2SoSe23_Abschlussarbeit.installListeners();
             drawEverything();
+            yield EIA2SoSe23_Abschlussarbeit.installListeners();
         });
     }
     // handles drawn visuals
@@ -158,7 +161,6 @@ Quellen: -
         console.log("Finished drawing background");
         canvas.removeEventListener("click", clickCanvas);
         canvas.addEventListener("click", clickCanvas);
-        //spawnNewCustomer();
         // THE ANIMATION
         animationInterval = setInterval(drawAnimated, 100);
     }
@@ -201,20 +203,61 @@ Quellen: -
             customerCount++;
         });
         // spawn new one
-        if (EIA2SoSe23_Abschlussarbeit.shopOpen && Math.random() < 0.1 && customerCount < 10 && EIA2SoSe23_Abschlussarbeit.savedCreams.length > 0) {
-            console.log("Spawned new customer");
-            spawnNewCustomer();
+        let spawnChance = 0.012 * getSpendAmount();
+        //console.log("Chance", Math.floor(spawnChance * 1000) / 10);
+        if (EIA2SoSe23_Abschlussarbeit.shopOpen) {
+            // always spawn one customer at a certain point
+            if (frameSinceShopOpen < 0) {
+                spawnNewCustomer();
+                frameSinceShopOpen = 9001;
+            }
+            else {
+                // check - if instructions aren't visible anymore,
+                //       - spawn since last frame,
+                //       - random spawn chance,
+                //       - if there's any icecream even available,
+                //       - and how many customers there are total
+                if (lastInstructionCount < 20 && framesSinceLastSpawn < 0 && Math.random() < spawnChance && EIA2SoSe23_Abschlussarbeit.savedCreams.length > 0 && customerCount < 13) {
+                    console.log("Spawned new customer");
+                    spawnNewCustomer();
+                    framesSinceLastSpawn = 20;
+                }
+                frameSinceShopOpen--;
+            }
         }
+        framesSinceLastSpawn--;
+        //console.log(frameSinceShopOpen, framesSinceLastSpawn, lastInstructionCount);
     }
     // spawns new customer
     function spawnNewCustomer() {
         // get random spawn height, speed, icecream, waffle
         let randomH = getRandomNumber(EIA2SoSe23_Abschlussarbeit.canvasH * 0.875, EIA2SoSe23_Abschlussarbeit.horizon + EIA2SoSe23_Abschlussarbeit.canvasH * 0.05);
         let randomSpeed = getRandomNumber(EIA2SoSe23_Abschlussarbeit.canvasW * 0.015, EIA2SoSe23_Abschlussarbeit.canvasW * 0.01);
-        let randomIceNum = Math.floor(Math.random() * EIA2SoSe23_Abschlussarbeit.savedCreams.length);
         let randomWaffle = getRandomNumber(2);
-        let randomIcecream = EIA2SoSe23_Abschlussarbeit.getDisplayIcecream(0, 0, false, randomIceNum, randomWaffle);
-        let newCustomer = new EIA2SoSe23_Abschlussarbeit.Customer(EIA2SoSe23_Abschlussarbeit.spawnX, randomH, randomSpeed, randomSpeed * 0.5, EIA2SoSe23_Abschlussarbeit.allCustomers.length, randomIcecream);
+        // get what customer is willing to spend
+        let willingToSpend = [];
+        let moneyWillingToSpend = getSpendAmount();
+        // add icecreams that cost less than what they're willing to spend to selection they choose from
+        for (let i = 0; i < EIA2SoSe23_Abschlussarbeit.savedCreamsAmount; i++) {
+            if (EIA2SoSe23_Abschlussarbeit.spendList[i] < moneyWillingToSpend) {
+                willingToSpend.push(i);
+            }
+        }
+        // check if they have icecreams within that selection to choose from
+        let iceWillingToSpend = Math.floor(Math.random() * willingToSpend.length);
+        let randomIcecream;
+        let tooExpensive = false;
+        // get dummy icecream & set too expensive bool
+        if (willingToSpend.length < 1) {
+            tooExpensive = true;
+            randomIcecream = EIA2SoSe23_Abschlussarbeit.getDisplayIcecream(0, 0, false, 0, randomWaffle);
+        }
+        else {
+            // get real icecream if there's one within pricerange available
+            randomIcecream = EIA2SoSe23_Abschlussarbeit.getDisplayIcecream(0, 0, false, willingToSpend[iceWillingToSpend], randomWaffle);
+        }
+        //console.log("Money I'm Willing To Spend", moneyWillingToSpend, willingToSpend, tooExpensive);
+        let newCustomer = new EIA2SoSe23_Abschlussarbeit.Customer(EIA2SoSe23_Abschlussarbeit.spawnX, randomH, randomSpeed, randomSpeed * 0.5, EIA2SoSe23_Abschlussarbeit.allCustomers.length, randomIcecream, tooExpensive);
         EIA2SoSe23_Abschlussarbeit.allCustomers.push(newCustomer);
     }
     // draws clickable shop sign
@@ -314,7 +357,7 @@ Quellen: -
     }
     // checks if there's any instructions to draw
     function checkInstructions() {
-        if (lastInstructionCount > 0) {
+        if (lastInstructionCount >= 0) {
             // first open text
             if (firstOpen) {
                 let openText = "Click on the sign to open the shop!";
@@ -327,11 +370,11 @@ Quellen: -
             }
             else if (EIA2SoSe23_Abschlussarbeit.firstIcecream && !firstServe && customerWaiting) {
                 // first icecream serving text
-                let iceText = "Now select the correct icecream";
+                let iceText = "Now select the icecream they want";
                 let iceText2 = "from your list to serve them!";
                 drawInstructions(iceText, iceText2);
             }
-            else if (!EIA2SoSe23_Abschlussarbeit.firstIcecream && !firstServe && customerWaiting) {
+            else if (!EIA2SoSe23_Abschlussarbeit.firstIcecream && !firstServe) {
                 // right/wrong serving text
                 let correctText = "Nice one!";
                 let correctText2 = "Keep it up!";
@@ -395,9 +438,12 @@ Quellen: -
             }
             if (mouseX > signPosX && mouseX < (signPosX + signW * 1.02) && mouseY > signPosY && mouseY < (signPosY + signH * 1.15)) {
                 // click shop sign
+                console.log("Opened shop!");
                 if (!EIA2SoSe23_Abschlussarbeit.shopOpen) {
                     EIA2SoSe23_Abschlussarbeit.shopOpen = true;
                     firstOpen = false;
+                    frameSinceShopOpen = 10;
+                    framesSinceLastSpawn = 50;
                     // hide creator div, edit, delete elements
                     fullCreatorDiv.setAttribute("style", "display: none");
                     EIA2SoSe23_Abschlussarbeit.editServeBttn.setAttribute("style", "display: none");
@@ -410,6 +456,7 @@ Quellen: -
                     }
                 }
                 else {
+                    console.log("Closed shop!");
                     EIA2SoSe23_Abschlussarbeit.shopOpen = false;
                     // show creator div, edit, delete elements
                     fullCreatorDiv.setAttribute("style", "display: inline");
@@ -421,7 +468,7 @@ Quellen: -
     }
     // selects customer at the spot (if there's one there)
     function selectCustomer(_waitPos) {
-        console.log("CLICKED WAITING POS " + (_waitPos + 1));
+        //console.log("CLICKED WAITING POS " + (_waitPos + 1));
         // get wait pos selected if it's occupied & correct status
         if (EIA2SoSe23_Abschlussarbeit.waitingPosTaken[_waitPos] >= 0 && EIA2SoSe23_Abschlussarbeit.waitingPosTaken[_waitPos] != EIA2SoSe23_Abschlussarbeit.waitingSelectedID
             && EIA2SoSe23_Abschlussarbeit.allCustomers[EIA2SoSe23_Abschlussarbeit.waitingPosTaken[_waitPos]].status == CustomerStatus.AskingForIcecream) {
@@ -634,6 +681,18 @@ Quellen: -
         return Boolean(Math.round(Math.random()));
     }
     EIA2SoSe23_Abschlussarbeit.getRandomBool = getRandomBool;
+    // get how much money customer is willing to spend
+    function getSpendAmount() {
+        let baseWilling = getRandomNumber(230, 170) / 100;
+        let percentage = (myRatingCurrent / 10 - 0.5);
+        // modifier below 0 is less strong
+        if (percentage < 0) {
+            return baseWilling * (1 + percentage * 0.75);
+        }
+        else {
+            return baseWilling * (1 + percentage * 2);
+        }
+    }
     // gets an icecream topping (or sauce) color rgb code
     function getIcecreamColor(_topping, _sauce = false) {
         let colorR = 0;
