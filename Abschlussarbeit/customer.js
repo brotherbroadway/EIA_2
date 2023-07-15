@@ -172,7 +172,7 @@ Quellen: -
                     this.checkShopStatus();
                     break;
                 case EIA2SoSe23_Abschlussarbeit.CustomerStatus.AskingForIcecream:
-                    this.updateRating(-0.0175);
+                    this.updateRating(-0.0225);
                     this.checkShopStatus();
                     break;
                 case EIA2SoSe23_Abschlussarbeit.CustomerStatus.WaitingInside:
@@ -378,7 +378,7 @@ Quellen: -
                 this.speedY = -this.speedY;
             }
             this.posY += this.speedY;
-            this.updateRating(-0.025);
+            this.updateRating(-0.0175);
             this.frameCount--;
         }
         // tries to give icecream to customer
@@ -387,7 +387,7 @@ Quellen: -
             EIA2SoSe23_Abschlussarbeit.waitingSelectedID = -2;
             if (_creamID == this.myIcecream.id && EIA2SoSe23_Abschlussarbeit.waffleCheck.checked === this.myIcecream.waffle) {
                 //console.log("YES THAT'S IT");
-                this.updateRating(1);
+                this.updateRating(0.5 + this.rating * 0.05);
                 // update status
                 if (this.checkSeats()) {
                     EIA2SoSe23_Abschlussarbeit.waitingPosTaken[this.myQueuePos] = -1;

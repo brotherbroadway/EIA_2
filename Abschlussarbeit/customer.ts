@@ -217,7 +217,7 @@ Quellen: -
                     this.checkShopStatus();
                     break;
                 case CustomerStatus.AskingForIcecream:
-                    this.updateRating(-0.0175);
+                    this.updateRating(-0.0225);
 
                     this.checkShopStatus();
                     break;
@@ -443,7 +443,7 @@ Quellen: -
 
             this.posY += this.speedY;
 
-            this.updateRating(-0.025);
+            this.updateRating(-0.0175);
             this.frameCount--;
         }
 
@@ -455,7 +455,7 @@ Quellen: -
             if (_creamID == this.myIcecream.id && waffleCheck.checked === this.myIcecream.waffle) {
                 //console.log("YES THAT'S IT");
 
-                this.updateRating(1);
+                this.updateRating(0.5 + this.rating * 0.05);
                 
                 // update status
                 if (this.checkSeats()) {
