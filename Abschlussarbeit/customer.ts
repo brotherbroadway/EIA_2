@@ -6,7 +6,7 @@ Matrikel: 265274
 Datum: 15.07.2023
 Quellen: -
 */
-    export class Customer extends Moveable{
+    export class Customer extends Moveable {
         private speedX: number;
         private speedY: number;
         private id: number;
