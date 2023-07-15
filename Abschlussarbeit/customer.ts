@@ -20,8 +20,9 @@ Quellen: -
         private myQueuePos: number;
         private mySeatPos: number;
         private wasServed: boolean;
+        private tooExpensive: boolean;
 
-        public constructor(_posX: number, _posY: number, _speedX: number, _speedY: number, _id: number, _myIcecream: DisplayIcecream, _scaling: number = 1, _mood: CustomerMood = CustomerMood.Good, _status: CustomerStatus = CustomerStatus.Arriving, _rating: number = 10, _frameCount: number = -20, _mouthOpen: boolean = false, _selected: boolean = false, _myQueuePos: number = -3, _mySeatPos: number = -1, _wasServed: boolean = false) {
+        public constructor(_posX: number, _posY: number, _speedX: number, _speedY: number, _id: number, _myIcecream: DisplayIcecream, _tooExpensive: boolean = false, _scaling: number = 1, _mood: CustomerMood = CustomerMood.Good, _status: CustomerStatus = CustomerStatus.Arriving, _rating: number = 10, _frameCount: number = -20, _mouthOpen: boolean = false, _selected: boolean = false, _myQueuePos: number = -3, _mySeatPos: number = -1, _wasServed: boolean = false) {
             super(_posX, _posY, _scaling);
 
             this.speedX = _speedX;
@@ -37,6 +38,7 @@ Quellen: -
             this.myQueuePos = _myQueuePos;
             this.mySeatPos = _mySeatPos;
             this.wasServed = _wasServed;
+            this.tooExpensive = _tooExpensive;
         }
 
         public draw(): void {
@@ -317,10 +319,19 @@ Quellen: -
         private arrive(): void {
             if (this.posX + this.speedX < waitOutsidePosX) {
                 this.posX += this.speedX;
-            } else if (this.checkQueue()) { // check if queue is available
+            } else if (this.checkQueue() && !this.tooExpensive) { // check if queue is available
                 this.updateStatus(CustomerStatus.GoingToQueue); // go to queue
-            } else { // if not, wait outside
+            } else if (!this.tooExpensive) { // if not, wait outside
                 this.updateStatus(CustomerStatus.WaitingOutside);
+            } else {
+                // if in queue, leave queue
+                if (this.myQueuePos >= 0) {
+                    waitingPosTaken[this.myQueuePos] = -1;
+                    this.myQueuePos = -1;
+                }
+
+                this.updateRating(-7.5);
+                this.updateStatus(CustomerStatus.Reviewing);
             }
         }
 
@@ -414,8 +425,10 @@ Quellen: -
                     myRatingCount++;
 
                     console.log("Customer left (Rating: " + Math.floor(this.rating * 10) / 10 +"/10)");
-                } else {
+                } else if (!this.tooExpensive) {
                     console.log("Customer left (no rating)");
+                } else {
+                    console.log("Customer left (selection too expensive)");
                 }
             }
         }

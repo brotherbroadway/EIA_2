@@ -9,7 +9,7 @@ Datum: 06.07.2023
 Quellen: -
 */
     class Customer extends EIA2SoSe23_Abschlussarbeit.Moveable {
-        constructor(_posX, _posY, _speedX, _speedY, _id, _myIcecream, _scaling = 1, _mood = EIA2SoSe23_Abschlussarbeit.CustomerMood.Good, _status = EIA2SoSe23_Abschlussarbeit.CustomerStatus.Arriving, _rating = 10, _frameCount = -20, _mouthOpen = false, _selected = false, _myQueuePos = -3, _mySeatPos = -1, _wasServed = false) {
+        constructor(_posX, _posY, _speedX, _speedY, _id, _myIcecream, _tooExpensive = false, _scaling = 1, _mood = EIA2SoSe23_Abschlussarbeit.CustomerMood.Good, _status = EIA2SoSe23_Abschlussarbeit.CustomerStatus.Arriving, _rating = 10, _frameCount = -20, _mouthOpen = false, _selected = false, _myQueuePos = -3, _mySeatPos = -1, _wasServed = false) {
             super(_posX, _posY, _scaling);
             this.speedX = _speedX;
             this.speedY = _speedY;
@@ -24,6 +24,7 @@ Quellen: -
             this.myQueuePos = _myQueuePos;
             this.mySeatPos = _mySeatPos;
             this.wasServed = _wasServed;
+            this.tooExpensive = _tooExpensive;
         }
         draw() {
             // scales customer depending on screen position
@@ -258,11 +259,20 @@ Quellen: -
             if (this.posX + this.speedX < EIA2SoSe23_Abschlussarbeit.waitOutsidePosX) {
                 this.posX += this.speedX;
             }
-            else if (this.checkQueue()) { // check if queue is available
+            else if (this.checkQueue() && !this.tooExpensive) { // check if queue is available
                 this.updateStatus(EIA2SoSe23_Abschlussarbeit.CustomerStatus.GoingToQueue); // go to queue
             }
-            else { // if not, wait outside
+            else if (!this.tooExpensive) { // if not, wait outside
                 this.updateStatus(EIA2SoSe23_Abschlussarbeit.CustomerStatus.WaitingOutside);
+            }
+            else {
+                // if in queue, leave queue
+                if (this.myQueuePos >= 0) {
+                    EIA2SoSe23_Abschlussarbeit.waitingPosTaken[this.myQueuePos] = -1;
+                    this.myQueuePos = -1;
+                }
+                this.updateRating(-7.5);
+                this.updateStatus(EIA2SoSe23_Abschlussarbeit.CustomerStatus.Reviewing);
             }
         }
         // go to queue position
@@ -351,8 +361,11 @@ Quellen: -
                     EIA2SoSe23_Abschlussarbeit.myRatingCount++;
                     console.log("Customer left (Rating: " + Math.floor(this.rating * 10) / 10 + "/10)");
                 }
-                else {
+                else if (!this.tooExpensive) {
                     console.log("Customer left (no rating)");
+                }
+                else {
+                    console.log("Customer left (selection too expensive)");
                 }
             }
         }
