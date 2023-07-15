@@ -14,7 +14,7 @@ var EIA2SoSe23_Abschlussarbeit;
 Aufgabe: Abschlussarbeit EIA2 SoSe 23
 Name: Jona Ruder
 Matrikel: 265274
-Datum: 06.07.2023
+Datum: 15.07.2023
 Quellen: -
 */
     // different icecream types
@@ -44,6 +44,7 @@ Quellen: -
     EIA2SoSe23_Abschlussarbeit.whippedValue = 0.5;
     // waffle cost (half is production cost)
     EIA2SoSe23_Abschlussarbeit.waffleValue = 0.3;
+    // list of price divided by prod cost for customers to reference
     EIA2SoSe23_Abschlussarbeit.spendList = [];
     var taskTest;
     // installs listeners
@@ -316,11 +317,9 @@ Quellen: -
                 EIA2SoSe23_Abschlussarbeit.currentSelectedPrice += EIA2SoSe23_Abschlussarbeit.waffleValue;
             }
             EIA2SoSe23_Abschlussarbeit.pricePreviewParagraph.innerHTML = "+ $" + displayTwoDecimals(EIA2SoSe23_Abschlussarbeit.currentSelectedPrice);
-            EIA2SoSe23_Abschlussarbeit.pricePreviewParagraph.style.color = "green";
             // updating prod value
             EIA2SoSe23_Abschlussarbeit.currentSelectedProdCost = getProductionCost(EIA2SoSe23_Abschlussarbeit.savedCreams[creamIndex]);
             EIA2SoSe23_Abschlussarbeit.priceProdPreviewParagraph.innerHTML = "- $" + displayTwoDecimals(EIA2SoSe23_Abschlussarbeit.currentSelectedProdCost);
-            EIA2SoSe23_Abschlussarbeit.priceProdPreviewParagraph.style.color = "red";
         }
     }
     // calculate production cost
@@ -377,6 +376,8 @@ Quellen: -
         if (!EIA2SoSe23_Abschlussarbeit.createFormOpen) {
             EIA2SoSe23_Abschlussarbeit.creatorDiv.setAttribute("style", "display: inline");
             EIA2SoSe23_Abschlussarbeit.createNewBttn.innerHTML = "Reset";
+            EIA2SoSe23_Abschlussarbeit.createNewBttn.setAttribute("style", "margin-bottom: 10px");
+            EIA2SoSe23_Abschlussarbeit.selectionContainerDiv.setAttribute("style", "padding-top: 2%");
             EIA2SoSe23_Abschlussarbeit.creatingIcecream = getDisplayIcecream(EIA2SoSe23_Abschlussarbeit.canvasW * 0.7, EIA2SoSe23_Abschlussarbeit.canvasH * 0.95, true);
             EIA2SoSe23_Abschlussarbeit.createFormOpen = true;
         }
@@ -386,6 +387,7 @@ Quellen: -
         else { // close create form if nothing is filled
             EIA2SoSe23_Abschlussarbeit.creatorDiv.setAttribute("style", "display: none");
             EIA2SoSe23_Abschlussarbeit.createNewBttn.innerHTML = "Create New";
+            EIA2SoSe23_Abschlussarbeit.selectionContainerDiv.setAttribute("style", "padding-top: 10%");
             EIA2SoSe23_Abschlussarbeit.createFormOpen = false;
         }
     }
@@ -458,6 +460,7 @@ Quellen: -
                 //console.log("QUERY: ", query.toString() + " - FORMDATA: ", JSON.stringify(json));
                 EIA2SoSe23_Abschlussarbeit.creatorDiv.setAttribute("style", "display: none");
                 EIA2SoSe23_Abschlussarbeit.createNewBttn.innerHTML = "Create New";
+                EIA2SoSe23_Abschlussarbeit.selectionContainerDiv.setAttribute("style", "padding-top: 10%");
                 EIA2SoSe23_Abschlussarbeit.createFormOpen = false;
                 resetCreatorFields();
                 yield fetch(EIA2SoSe23_Abschlussarbeit.myUrl + query.toString());
@@ -558,8 +561,7 @@ Quellen: -
     function updateProductionCost(_show = true) {
         if (_show) {
             let creatorProdCost = getProductionCost(EIA2SoSe23_Abschlussarbeit.creatorIcecream, false);
-            EIA2SoSe23_Abschlussarbeit.creatorProdParagraph.innerHTML = "Cost: $ " + displayTwoDecimals(creatorProdCost);
-            EIA2SoSe23_Abschlussarbeit.creatorProdParagraph.style.color = "red";
+            EIA2SoSe23_Abschlussarbeit.creatorProdParagraph.innerHTML = "Cost: $" + displayTwoDecimals(creatorProdCost);
         }
         else {
             EIA2SoSe23_Abschlussarbeit.creatorProdParagraph.innerHTML = "";
@@ -569,6 +571,22 @@ Quellen: -
     function clickAddToppingButton() {
         EIA2SoSe23_Abschlussarbeit.addToppingBttn.disabled = true;
         EIA2SoSe23_Abschlussarbeit.dropdownToppingsArray[EIA2SoSe23_Abschlussarbeit.visibleToppings].setAttribute("style", "display: inline");
+        // adjust padding of entire div
+        let topPadding = 0;
+        switch (EIA2SoSe23_Abschlussarbeit.visibleToppings) {
+            case 1:
+                topPadding = 1;
+                break;
+            case 2:
+                topPadding = 0;
+                break;
+            case 3:
+                topPadding = -1;
+                break;
+            default:
+                break;
+        }
+        EIA2SoSe23_Abschlussarbeit.selectionContainerDiv.setAttribute("style", "padding-top: " + topPadding + "%");
         EIA2SoSe23_Abschlussarbeit.removeToppingBttn.disabled = false;
         //removeToppingBttn.setAttribute("style", "display: inline");
         EIA2SoSe23_Abschlussarbeit.visibleToppings++;
@@ -582,6 +600,22 @@ Quellen: -
     function clickRemoveToppingButton(_event) {
         EIA2SoSe23_Abschlussarbeit.visibleToppings--;
         EIA2SoSe23_Abschlussarbeit.dropdownToppingsArray[EIA2SoSe23_Abschlussarbeit.visibleToppings].setAttribute("style", "display: none");
+        // adjust padding of entire div
+        let topPadding = 0;
+        switch (EIA2SoSe23_Abschlussarbeit.visibleToppings) {
+            case 1:
+                topPadding = 1;
+                break;
+            case 2:
+                topPadding = 0;
+                break;
+            case 3:
+                topPadding = -1;
+                break;
+            default:
+                break;
+        }
+        EIA2SoSe23_Abschlussarbeit.selectionContainerDiv.setAttribute("style", "padding-top: " + topPadding + "%");
         setSelectedIndex(EIA2SoSe23_Abschlussarbeit.dropdownToppingsArray[EIA2SoSe23_Abschlussarbeit.visibleToppings], 0);
         EIA2SoSe23_Abschlussarbeit.addToppingBttn.disabled = false;
         //addToppingBttn.setAttribute("style", "display: inline");
@@ -607,6 +641,8 @@ Quellen: -
             if (EIA2SoSe23_Abschlussarbeit.createFormOpen) {
                 EIA2SoSe23_Abschlussarbeit.creatorDiv.setAttribute("style", "display: none");
                 EIA2SoSe23_Abschlussarbeit.createNewBttn.innerHTML = "Create New";
+                EIA2SoSe23_Abschlussarbeit.createNewBttn.setAttribute("style", "margin-bottom: 0px");
+                EIA2SoSe23_Abschlussarbeit.selectionContainerDiv.setAttribute("style", "padding-top: 10%");
                 EIA2SoSe23_Abschlussarbeit.createFormOpen = false;
                 resetCreatorFields();
             }
@@ -683,6 +719,8 @@ Quellen: -
             // open create form in edit mode
             EIA2SoSe23_Abschlussarbeit.creatorDiv.setAttribute("style", "display: inline");
             EIA2SoSe23_Abschlussarbeit.createNewBttn.innerHTML = "Reset";
+            EIA2SoSe23_Abschlussarbeit.createNewBttn.setAttribute("style", "margin-bottom: 10px");
+            //selectionContainerDiv.setAttribute("style", "padding-top: 2%");
             EIA2SoSe23_Abschlussarbeit.editingForm = true;
             EIA2SoSe23_Abschlussarbeit.createFormOpen = true;
             updateDropdownServe(true);

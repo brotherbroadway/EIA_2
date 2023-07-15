@@ -3,7 +3,7 @@ namespace EIA2SoSe23_Abschlussarbeit {
 Aufgabe: Abschlussarbeit EIA2 SoSe 23
 Name: Jona Ruder
 Matrikel: 265274
-Datum: 06.07.2023
+Datum: 15.07.2023
 Quellen: -
 */
     // different icecream types
@@ -50,6 +50,7 @@ Quellen: -
         id: string;
     }
 
+    // list of price divided by prod cost for customers to reference
     export let spendList: number[] = [];
 
     var taskTest;
@@ -386,12 +387,10 @@ Quellen: -
                 currentSelectedPrice += waffleValue;
             }
             pricePreviewParagraph.innerHTML = "+ $" + displayTwoDecimals(currentSelectedPrice);
-            pricePreviewParagraph.style.color = "green";
 
             // updating prod value
             currentSelectedProdCost = getProductionCost(savedCreams[creamIndex]);
             priceProdPreviewParagraph.innerHTML = "- $" + displayTwoDecimals(currentSelectedProdCost);
-            priceProdPreviewParagraph.style.color = "red";
         }
     }
 
@@ -460,6 +459,9 @@ Quellen: -
         if (!createFormOpen) {
             creatorDiv.setAttribute("style", "display: inline");
             createNewBttn.innerHTML = "Reset";
+            createNewBttn.setAttribute("style", "margin-bottom: 10px");
+
+            selectionContainerDiv.setAttribute("style", "padding-top: 2%");
 
             creatingIcecream = getDisplayIcecream(canvasW * 0.7, canvasH * 0.95, true);
 
@@ -469,6 +471,8 @@ Quellen: -
         } else { // close create form if nothing is filled
             creatorDiv.setAttribute("style", "display: none");
             createNewBttn.innerHTML = "Create New";
+
+            selectionContainerDiv.setAttribute("style", "padding-top: 10%");
 
             createFormOpen = false;
         }
@@ -565,6 +569,8 @@ Quellen: -
 
             creatorDiv.setAttribute("style", "display: none");
             createNewBttn.innerHTML = "Create New";
+
+            selectionContainerDiv.setAttribute("style", "padding-top: 10%");
 
             createFormOpen = false;
 
@@ -694,8 +700,7 @@ Quellen: -
     function updateProductionCost(_show: boolean = true): void {
         if (_show) {
             let creatorProdCost: number = getProductionCost(creatorIcecream, false);
-            creatorProdParagraph.innerHTML = "Cost: $ " + displayTwoDecimals(creatorProdCost);
-            creatorProdParagraph.style.color = "red";
+            creatorProdParagraph.innerHTML = "Cost: $" + displayTwoDecimals(creatorProdCost);
         } else {
             creatorProdParagraph.innerHTML = "";
         }
@@ -706,6 +711,25 @@ Quellen: -
         addToppingBttn.disabled = true;
 
         dropdownToppingsArray[visibleToppings].setAttribute("style", "display: inline");
+
+        // adjust padding of entire div
+        let topPadding: number = 0;
+        
+        switch (visibleToppings) {
+            case 1:
+                topPadding = 1;
+                break;
+            case 2:
+                topPadding = 0;
+                break;
+            case 3:
+                topPadding = -1;
+                break;
+            default:
+                break;
+        }
+
+        selectionContainerDiv.setAttribute("style", "padding-top: " + topPadding + "%");
 
         removeToppingBttn.disabled = false;
 
@@ -726,6 +750,25 @@ Quellen: -
         visibleToppings--;
 
         dropdownToppingsArray[visibleToppings].setAttribute("style", "display: none");
+        
+        // adjust padding of entire div
+        let topPadding: number = 0;
+        
+        switch (visibleToppings) {
+            case 1:
+                topPadding = 1;
+                break;
+            case 2:
+                topPadding = 0;
+                break;
+            case 3:
+                topPadding = -1;
+                break;
+            default:
+                break;
+        }
+
+        selectionContainerDiv.setAttribute("style", "padding-top: " + topPadding + "%");
 
         setSelectedIndex(dropdownToppingsArray[visibleToppings], 0);
 
@@ -762,6 +805,9 @@ Quellen: -
             if (createFormOpen) {
                 creatorDiv.setAttribute("style", "display: none");
                 createNewBttn.innerHTML = "Create New";
+                createNewBttn.setAttribute("style", "margin-bottom: 0px");
+
+                selectionContainerDiv.setAttribute("style", "padding-top: 10%");
 
                 createFormOpen = false;
 
@@ -858,6 +904,9 @@ Quellen: -
             // open create form in edit mode
             creatorDiv.setAttribute("style", "display: inline");
             createNewBttn.innerHTML = "Reset";
+            createNewBttn.setAttribute("style", "margin-bottom: 10px");
+
+            //selectionContainerDiv.setAttribute("style", "padding-top: 2%");
     
             editingForm = true;
             createFormOpen = true;
