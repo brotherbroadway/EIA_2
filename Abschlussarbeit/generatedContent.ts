@@ -681,7 +681,7 @@ Quellen: -
 
     // change whipped cream check
     function selectWhippedChange(_event: Event): void {
-        console.log("WHIP CHECK:", whippedCheck.checked);
+        //console.log("WHIP CHECK:", whippedCheck.checked);
 
         if (whippedCheck.checked) {
             creatorIcecream.whippedCream = true;

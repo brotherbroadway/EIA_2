@@ -545,7 +545,7 @@ Quellen: -
     }
     // change whipped cream check
     function selectWhippedChange(_event) {
-        console.log("WHIP CHECK:", EIA2SoSe23_Abschlussarbeit.whippedCheck.checked);
+        //console.log("WHIP CHECK:", whippedCheck.checked);
         if (EIA2SoSe23_Abschlussarbeit.whippedCheck.checked) {
             EIA2SoSe23_Abschlussarbeit.creatorIcecream.whippedCream = true;
             EIA2SoSe23_Abschlussarbeit.creatingIcecream.changeWhipped(true);
