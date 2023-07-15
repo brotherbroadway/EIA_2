@@ -3,7 +3,7 @@ namespace EIA2SoSe23_Abschlussarbeit {
 Aufgabe: Abschlussarbeit EIA2 SoSe 23
 Name: Jona Ruder
 Matrikel: 265274
-Datum: 06.07.2023
+Datum: 15.07.2023
 Quellen: -
 */
 
@@ -30,6 +30,8 @@ Quellen: -
     export let priceField: HTMLInputElement = <HTMLInputElement>document.getElementById("creatorprice");
     export let creatorProdParagraph: HTMLParagraphElement = <HTMLParagraphElement>document.getElementById("creatorpriceprod");
     export let submitIcecreamButton: HTMLButtonElement = <HTMLButtonElement>document.getElementById("creatorsubmitbutton");
+
+    export let selectionContainerDiv: HTMLDivElement = <HTMLDivElement>document.getElementById("selectioncontainer");
 
     // for server data
     export let myUrl: string = "https://webuser.hs-furtwangen.de/~ruderjon/Database/?";
@@ -88,7 +90,6 @@ Quellen: -
     let lastInstructionCount: number = 25;
     let framesSinceLastSpawn: number = 0;
     let frameSinceShopOpen: number = 0;
-    let spawnedFirstCustomer: boolean = false;
 
     // element bools and others
     export let createFormOpen: boolean = false;
@@ -225,18 +226,19 @@ Quellen: -
     function drawCustomers(): void {
         customerCount = 0;
 
+        // draw all customers on screen
         allCustomers.forEach(function(e) {
             e.draw();
             customerCount++;
         })
 
         // spawn new one
-        let spawnChance: number = 0.012 * getSpendAmount();
+        let spawnChance: number = 0.0125 * getSpendAmount();
 
         //console.log("Chance", Math.floor(spawnChance * 1000) / 10);
 
         if (shopOpen) {
-            // always spawn one customer at a certain point
+            // always spawn one customer after first shop open
             if (frameSinceShopOpen < 0) {
                 spawnNewCustomer();
 
@@ -269,7 +271,6 @@ Quellen: -
         let randomH: number = getRandomNumber(canvasH * 0.875, horizon + canvasH * 0.05);
         let randomSpeed: number = getRandomNumber(canvasW * 0.015, canvasW * 0.01);
         let randomWaffle: number = getRandomNumber(2);
-
 
         // get what customer is willing to spend
         let willingToSpend: number[] = [];
@@ -320,7 +321,7 @@ Quellen: -
             signText = "OPEN";
         }
 
-        // rect
+        // rect with rounded corners
         crc2.beginPath();
         crc2.roundRect(0, 0, signW, signH, fontSize * 0.1);
         crc2.strokeStyle = "black";
@@ -398,6 +399,7 @@ Quellen: -
             crc2.fillText(changePrefix + "$" + moneyChange.toFixed(2), bankW + ratingW, fontH * 2);
         }
 
+        // reduce frames they're shown
         moneyReductionFrameCount--;
         moneyGainFrameCount--;
 
@@ -421,12 +423,12 @@ Quellen: -
         if (lastInstructionCount >= 0) {
             // first open text
             if (firstOpen) {
-                let openText: string = "Click on the sign to open the shop!";
+                let openText: string = "Click the sign to open the shop!";
 
                 drawInstructions(openText);
             } else if (firstServe && customerWaiting) {
                 // first customer serving text
-                let serveText: string = "Click on a customer's face to select them!";
+                let serveText: string = "Click a customer's face to select them!";
 
                 drawInstructions(serveText);
             } else if (firstIcecream && !firstServe && customerWaiting) {
@@ -460,6 +462,7 @@ Quellen: -
 
         let fontSize: number = canvasW * 0.04;
 
+        // text
         crc2.fillStyle = instructionColor;
         crc2.strokeStyle = "black";
         crc2.lineWidth = fontSize * 0.1;
@@ -468,6 +471,7 @@ Quellen: -
         crc2.strokeText(_text, 0, 0);
         crc2.fillText(_text, 0, 0);
 
+        // second line of text (if there is one)
         if (_text2.length > 0) {
             crc2.strokeText(_text2, 0, canvasH * 0.035);
             crc2.fillText(_text2, 0, canvasH * 0.035);
@@ -489,6 +493,7 @@ Quellen: -
 
             //console.log("X:", Math.floor(waitingPosX[0]), Math.floor(waitingPosX[0] + waitingPosSize), "Y:", Math.floor(waitingPosY), Math.floor(waitingPosY - waitingPosSize));
 
+            // check at which waiting pos
             if (mouseX > waitingPosX[0] && mouseX < (waitingPosX[0] + waitingPosSize)) {
                 selectCustomer(0);
             } else if (mouseX > waitingPosX[1] && mouseX < (waitingPosX[1] + waitingPosSize)) {
@@ -507,9 +512,9 @@ Quellen: -
             }
             if (mouseX > signPosX && mouseX < (signPosX + signW * 1.02) && mouseY > signPosY && mouseY < (signPosY + signH * 1.15)) {
                 // click shop sign
-                console.log("Opened shop!");
-
                 if (!shopOpen) {
+                    console.log("Opened shop!");
+
                     shopOpen = true;
                     firstOpen = false;
                     frameSinceShopOpen = 10;
@@ -520,6 +525,9 @@ Quellen: -
                     editServeBttn.setAttribute("style", "display: none");
                     deleteServeBttn.setAttribute("style", "display: none");
 
+                    selectionContainerDiv.setAttribute("style", "padding-top: 15%");
+
+                    // close & reset create form if open
                     if (createFormOpen) {
                         resetCreatorFields();
 
@@ -534,9 +542,11 @@ Quellen: -
                     shopOpen = false;
 
                     // show creator div, edit, delete elements
-                    fullCreatorDiv.setAttribute("style", "display: inline");
-                    editServeBttn.setAttribute("style", "display: inline");
-                    deleteServeBttn.setAttribute("style", "display: inline");
+                    fullCreatorDiv.setAttribute("style", "display: inline-block");
+                    editServeBttn.setAttribute("style", "display: inline-block");
+                    deleteServeBttn.setAttribute("style", "display: inline-block");
+
+                    selectionContainerDiv.setAttribute("style", "padding-top: 6%");
                 }
             }
         }
@@ -556,7 +566,7 @@ Quellen: -
 
                 waitingSelectedID = waitingPosTaken[_waitPos];
 
-                console.log("Selected", waitingSelectedID);
+                console.log("Selected a customer"); //console.log("Selected", waitingSelectedID);
                 allCustomers[waitingSelectedID].selected = true;
 
                 firstServe = false;
@@ -864,7 +874,7 @@ Quellen: -
                 break;
         }
 
-        // add them with sauce brightness together
+        // add them with sauce brightness modifier together
         color = "rgb(" + (colorR + sauceBonus) + ", " + (colorG + sauceBonus) + ", " + (colorB + sauceBonus) + ")";
 
         //console.log("Color: " + color, CreamTypes[_topping], _sauce);
@@ -905,7 +915,7 @@ Quellen: -
                 color = "rgb(52, 223, 52)"; // green
                 break;
             default:
-                // Error color
+                // Error color (just in case)
                 color = "rgb(200, 200, 200)"; // grey
                 break;
         }

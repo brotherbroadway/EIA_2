@@ -14,7 +14,7 @@ var EIA2SoSe23_Abschlussarbeit;
 Aufgabe: Abschlussarbeit EIA2 SoSe 23
 Name: Jona Ruder
 Matrikel: 265274
-Datum: 06.07.2023
+Datum: 15.07.2023
 Quellen: -
 */
     // serving tab elements
@@ -39,6 +39,7 @@ Quellen: -
     EIA2SoSe23_Abschlussarbeit.priceField = document.getElementById("creatorprice");
     EIA2SoSe23_Abschlussarbeit.creatorProdParagraph = document.getElementById("creatorpriceprod");
     EIA2SoSe23_Abschlussarbeit.submitIcecreamButton = document.getElementById("creatorsubmitbutton");
+    EIA2SoSe23_Abschlussarbeit.selectionContainerDiv = document.getElementById("selectioncontainer");
     // for server data
     EIA2SoSe23_Abschlussarbeit.myUrl = "https://webuser.hs-furtwangen.de/~ruderjon/Database/?";
     EIA2SoSe23_Abschlussarbeit.savedCreams = [];
@@ -88,7 +89,6 @@ Quellen: -
     let lastInstructionCount = 25;
     let framesSinceLastSpawn = 0;
     let frameSinceShopOpen = 0;
-    let spawnedFirstCustomer = false;
     // element bools and others
     EIA2SoSe23_Abschlussarbeit.createFormOpen = false;
     EIA2SoSe23_Abschlussarbeit.editingForm = false;
@@ -198,15 +198,16 @@ Quellen: -
     // draws customers
     function drawCustomers() {
         customerCount = 0;
+        // draw all customers on screen
         EIA2SoSe23_Abschlussarbeit.allCustomers.forEach(function (e) {
             e.draw();
             customerCount++;
         });
         // spawn new one
-        let spawnChance = 0.012 * getSpendAmount();
+        let spawnChance = 0.0125 * getSpendAmount();
         //console.log("Chance", Math.floor(spawnChance * 1000) / 10);
         if (EIA2SoSe23_Abschlussarbeit.shopOpen) {
-            // always spawn one customer at a certain point
+            // always spawn one customer after first shop open
             if (frameSinceShopOpen < 0) {
                 spawnNewCustomer();
                 frameSinceShopOpen = 9001;
@@ -274,7 +275,7 @@ Quellen: -
             buttonColor = "rgb(0, 255, 0)";
             signText = "OPEN";
         }
-        // rect
+        // rect with rounded corners
         EIA2SoSe23_Abschlussarbeit.crc2.beginPath();
         EIA2SoSe23_Abschlussarbeit.crc2.roundRect(0, 0, signW, signH, fontSize * 0.1);
         EIA2SoSe23_Abschlussarbeit.crc2.strokeStyle = "black";
@@ -340,6 +341,7 @@ Quellen: -
             EIA2SoSe23_Abschlussarbeit.crc2.strokeText(changePrefix + "$" + moneyChange.toFixed(2), bankW + ratingW, fontH * 2);
             EIA2SoSe23_Abschlussarbeit.crc2.fillText(changePrefix + "$" + moneyChange.toFixed(2), bankW + ratingW, fontH * 2);
         }
+        // reduce frames they're shown
         EIA2SoSe23_Abschlussarbeit.moneyReductionFrameCount--;
         EIA2SoSe23_Abschlussarbeit.moneyGainFrameCount--;
         // current money
@@ -360,12 +362,12 @@ Quellen: -
         if (lastInstructionCount >= 0) {
             // first open text
             if (firstOpen) {
-                let openText = "Click on the sign to open the shop!";
+                let openText = "Click the sign to open the shop!";
                 drawInstructions(openText);
             }
             else if (firstServe && customerWaiting) {
                 // first customer serving text
-                let serveText = "Click on a customer's face to select them!";
+                let serveText = "Click a customer's face to select them!";
                 drawInstructions(serveText);
             }
             else if (EIA2SoSe23_Abschlussarbeit.firstIcecream && !firstServe && customerWaiting) {
@@ -395,6 +397,7 @@ Quellen: -
         EIA2SoSe23_Abschlussarbeit.crc2.save();
         EIA2SoSe23_Abschlussarbeit.crc2.translate(EIA2SoSe23_Abschlussarbeit.canvasW * 0.58, EIA2SoSe23_Abschlussarbeit.canvasH * 0.06);
         let fontSize = EIA2SoSe23_Abschlussarbeit.canvasW * 0.04;
+        // text
         EIA2SoSe23_Abschlussarbeit.crc2.fillStyle = instructionColor;
         EIA2SoSe23_Abschlussarbeit.crc2.strokeStyle = "black";
         EIA2SoSe23_Abschlussarbeit.crc2.lineWidth = fontSize * 0.1;
@@ -402,6 +405,7 @@ Quellen: -
         EIA2SoSe23_Abschlussarbeit.crc2.textAlign = "center";
         EIA2SoSe23_Abschlussarbeit.crc2.strokeText(_text, 0, 0);
         EIA2SoSe23_Abschlussarbeit.crc2.fillText(_text, 0, 0);
+        // second line of text (if there is one)
         if (_text2.length > 0) {
             EIA2SoSe23_Abschlussarbeit.crc2.strokeText(_text2, 0, EIA2SoSe23_Abschlussarbeit.canvasH * 0.035);
             EIA2SoSe23_Abschlussarbeit.crc2.fillText(_text2, 0, EIA2SoSe23_Abschlussarbeit.canvasH * 0.035);
@@ -417,6 +421,7 @@ Quellen: -
         // select customer at waiting pos
         if (mouseY < EIA2SoSe23_Abschlussarbeit.waitingPosY && mouseY > (EIA2SoSe23_Abschlussarbeit.waitingPosY - waitingPosSize)) {
             //console.log("X:", Math.floor(waitingPosX[0]), Math.floor(waitingPosX[0] + waitingPosSize), "Y:", Math.floor(waitingPosY), Math.floor(waitingPosY - waitingPosSize));
+            // check at which waiting pos
             if (mouseX > EIA2SoSe23_Abschlussarbeit.waitingPosX[0] && mouseX < (EIA2SoSe23_Abschlussarbeit.waitingPosX[0] + waitingPosSize)) {
                 selectCustomer(0);
             }
@@ -438,8 +443,8 @@ Quellen: -
             }
             if (mouseX > signPosX && mouseX < (signPosX + signW * 1.02) && mouseY > signPosY && mouseY < (signPosY + signH * 1.15)) {
                 // click shop sign
-                console.log("Opened shop!");
                 if (!EIA2SoSe23_Abschlussarbeit.shopOpen) {
+                    console.log("Opened shop!");
                     EIA2SoSe23_Abschlussarbeit.shopOpen = true;
                     firstOpen = false;
                     frameSinceShopOpen = 10;
@@ -448,6 +453,8 @@ Quellen: -
                     fullCreatorDiv.setAttribute("style", "display: none");
                     EIA2SoSe23_Abschlussarbeit.editServeBttn.setAttribute("style", "display: none");
                     EIA2SoSe23_Abschlussarbeit.deleteServeBttn.setAttribute("style", "display: none");
+                    EIA2SoSe23_Abschlussarbeit.selectionContainerDiv.setAttribute("style", "padding-top: 15%");
+                    // close & reset create form if open
                     if (EIA2SoSe23_Abschlussarbeit.createFormOpen) {
                         EIA2SoSe23_Abschlussarbeit.resetCreatorFields();
                         EIA2SoSe23_Abschlussarbeit.creatorDiv.setAttribute("style", "display: none");
@@ -459,9 +466,10 @@ Quellen: -
                     console.log("Closed shop!");
                     EIA2SoSe23_Abschlussarbeit.shopOpen = false;
                     // show creator div, edit, delete elements
-                    fullCreatorDiv.setAttribute("style", "display: inline");
-                    EIA2SoSe23_Abschlussarbeit.editServeBttn.setAttribute("style", "display: inline");
-                    EIA2SoSe23_Abschlussarbeit.deleteServeBttn.setAttribute("style", "display: inline");
+                    fullCreatorDiv.setAttribute("style", "display: inline-block");
+                    EIA2SoSe23_Abschlussarbeit.editServeBttn.setAttribute("style", "display: inline-block");
+                    EIA2SoSe23_Abschlussarbeit.deleteServeBttn.setAttribute("style", "display: inline-block");
+                    EIA2SoSe23_Abschlussarbeit.selectionContainerDiv.setAttribute("style", "padding-top: 6%");
                 }
             }
         }
@@ -477,7 +485,7 @@ Quellen: -
                 console.log("Unselected previous Customer");
             }
             EIA2SoSe23_Abschlussarbeit.waitingSelectedID = EIA2SoSe23_Abschlussarbeit.waitingPosTaken[_waitPos];
-            console.log("Selected", EIA2SoSe23_Abschlussarbeit.waitingSelectedID);
+            console.log("Selected a customer"); //console.log("Selected", waitingSelectedID);
             EIA2SoSe23_Abschlussarbeit.allCustomers[EIA2SoSe23_Abschlussarbeit.waitingSelectedID].selected = true;
             firstServe = false;
         }
@@ -737,7 +745,7 @@ Quellen: -
                 colorB = 255;
                 break;
         }
-        // add them with sauce brightness together
+        // add them with sauce brightness modifier together
         color = "rgb(" + (colorR + sauceBonus) + ", " + (colorG + sauceBonus) + ", " + (colorB + sauceBonus) + ")";
         //console.log("Color: " + color, CreamTypes[_topping], _sauce);
         return color;
@@ -773,7 +781,7 @@ Quellen: -
                 color = "rgb(52, 223, 52)"; // green
                 break;
             default:
-                // Error color
+                // Error color (just in case)
                 color = "rgb(200, 200, 200)"; // grey
                 break;
         }
