@@ -44,6 +44,7 @@ Quellen: -
     EIA2SoSe23_Abschlussarbeit.whippedValue = 0.5;
     // waffle cost (half is production cost)
     EIA2SoSe23_Abschlussarbeit.waffleValue = 0.3;
+    EIA2SoSe23_Abschlussarbeit.spendList = [];
     var taskTest;
     // installs listeners
     function installListeners() {
@@ -87,11 +88,11 @@ Quellen: -
         return __awaiter(this, void 0, void 0, function* () {
             let responseTest = yield fetch(EIA2SoSe23_Abschlussarbeit.myUrl + "command=show");
             let taskResponseTest = yield responseTest.text();
-            console.log("Server says: " + taskResponseTest);
+            //console.log("Server says: " + taskResponseTest);
             taskTest = JSON.parse(taskResponseTest);
             let taskTestlist = taskTest["data"];
             let taskTestBool = false;
-            console.log(taskTestlist);
+            //console.log(taskTestlist);
             // finding correct collection
             for (let i = 0; i < taskTestlist.length; i++) {
                 if (taskTestlist[i] == "Icecreams") {
@@ -159,11 +160,11 @@ Quellen: -
             EIA2SoSe23_Abschlussarbeit.savedCreamsAmount = EIA2SoSe23_Abschlussarbeit.savedCreams.length;
             //console.log("Toppings of Icecream#" + savedCreams[0].nameID + ": ");
             console.log("Saved Creams Amount: " + EIA2SoSe23_Abschlussarbeit.savedCreamsAmount);
-            console.log("Server Icecreams: ");
-            console.log(serverTasks);
-            console.log("Saved Icecreams: ");
-            console.log(EIA2SoSe23_Abschlussarbeit.savedCreams);
+            //console.log("Server Icecreams: ");
+            //console.log(serverTasks);
+            console.log("Saved Icecreams", EIA2SoSe23_Abschlussarbeit.savedCreams);
             updateDropdownServe(_removal);
+            updateSpendList();
             /*
             //console.log(savedCreams[1].id);
     
@@ -176,6 +177,17 @@ Quellen: -
             }
             */
         });
+    }
+    // updates spending reference list for customers
+    function updateSpendList() {
+        EIA2SoSe23_Abschlussarbeit.spendList = [];
+        for (let i = 0; i < EIA2SoSe23_Abschlussarbeit.savedCreamsAmount; i++) {
+            let thisPrice = JSON.parse("" + EIA2SoSe23_Abschlussarbeit.savedCreams[i].price);
+            let thisProdCost = getProductionCost(EIA2SoSe23_Abschlussarbeit.savedCreams[i]);
+            let thisSpendAmount = Math.floor(thisPrice / thisProdCost * 100) / 100;
+            EIA2SoSe23_Abschlussarbeit.spendList.push(thisSpendAmount);
+        }
+        console.log("Spend List", EIA2SoSe23_Abschlussarbeit.spendList);
     }
     // updates dropdown serve menu
     function updateDropdownServe(_remove = false) {
@@ -443,7 +455,7 @@ Quellen: -
                         json[key] = values.length > 1 ? values : values[0];
                     }
                 query.set("data", "" + JSON.stringify(json));
-                console.log("QUERY: ", query.toString() + " - FORMDATA: ", JSON.stringify(json));
+                //console.log("QUERY: ", query.toString() + " - FORMDATA: ", JSON.stringify(json));
                 EIA2SoSe23_Abschlussarbeit.creatorDiv.setAttribute("style", "display: none");
                 EIA2SoSe23_Abschlussarbeit.createNewBttn.innerHTML = "Create New";
                 EIA2SoSe23_Abschlussarbeit.createFormOpen = false;

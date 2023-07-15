@@ -50,6 +50,8 @@ Quellen: -
         id: string;
     }
 
+    export let spendList: number[] = [];
+
     var taskTest;
 
     interface FormDataJSON {
@@ -101,12 +103,12 @@ Quellen: -
     async function generateContent(): Promise<void> {
         let responseTest: Response = await fetch(myUrl + "command=show");
         let taskResponseTest: string = await responseTest.text();
-        console.log("Server says: " + taskResponseTest);
+        //console.log("Server says: " + taskResponseTest);
         taskTest = JSON.parse(taskResponseTest);
         let taskTestlist: string[] = taskTest["data"];
         let taskTestBool: boolean = false;
 
-        console.log(taskTestlist);
+        //console.log(taskTestlist);
 
         // finding correct collection
         for (let i: number = 0; i < taskTestlist.length; i++) {
@@ -187,13 +189,14 @@ Quellen: -
         //console.log("Toppings of Icecream#" + savedCreams[0].nameID + ": ");
         console.log("Saved Creams Amount: " + savedCreamsAmount);
 
-        console.log("Server Icecreams: ");
-        console.log(serverTasks);
+        //console.log("Server Icecreams: ");
+        //console.log(serverTasks);
 
-        console.log("Saved Icecreams: ");
-        console.log(savedCreams);
+        console.log("Saved Icecreams", savedCreams);
 
         updateDropdownServe(_removal);
+
+        updateSpendList();
 
         /*
         //console.log(savedCreams[1].id);
@@ -206,6 +209,21 @@ Quellen: -
             console.log("Topping#" + i + ": " + CreamTypes[sampleToppings[i]]);
         }
         */
+    }
+
+    // updates spending reference list for customers
+    function updateSpendList(): void {
+        spendList = [];
+
+        for (let i: number = 0; i < savedCreamsAmount; i++) {
+            let thisPrice: number = JSON.parse("" + savedCreams[i].price);
+            let thisProdCost: number = getProductionCost(savedCreams[i]);
+            let thisSpendAmount: number = Math.floor(thisPrice / thisProdCost * 100) / 100;
+
+            spendList.push(thisSpendAmount);
+        }
+
+        console.log("Spend List", spendList);
     }
 
     // updates dropdown serve menu
@@ -543,7 +561,7 @@ Quellen: -
             }
 
             query.set("data", "" + JSON.stringify(json));
-            console.log("QUERY: ", query.toString() + " - FORMDATA: ", JSON.stringify(json));
+            //console.log("QUERY: ", query.toString() + " - FORMDATA: ", JSON.stringify(json));
 
             creatorDiv.setAttribute("style", "display: none");
             createNewBttn.innerHTML = "Create New";
